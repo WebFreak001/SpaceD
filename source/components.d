@@ -39,3 +39,11 @@ struct VehiclePhysics
 
 	mixin ComponentBase;
 }
+
+struct TrackCollision
+{
+	vec2[] outerRing;
+	vec2[] innerRing;
+
+	mixin ComponentBase;
+}

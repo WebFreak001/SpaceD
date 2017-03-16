@@ -53,9 +53,9 @@ public:
 						physics.position += physics.linearVelocity * world.delta;
 						transform.transform = mat4.translation(physics.position.x, 0,
 								physics.position.y) * mat4.yrotation(-physics.rotation);
-						renderer.modelview.top = mat4.xrotation(cradians!45) * mat4.translation(0,
-								0, -5) * mat4.yrotation(physics.rotation) * mat4.translation(-physics.position.x,
-								-20, -physics.position.y);
+						renderer.modelview.top = mat4.xrotation(cradians!20) * mat4.translation(0,
+								0, -15) * mat4.yrotation(physics.rotation) * mat4.translation(-physics.position.x,
+								-10, -physics.position.y);
 					}
 				}
 			}
