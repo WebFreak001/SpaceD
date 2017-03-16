@@ -80,22 +80,32 @@ void main()
 		street.wrapX = TextureClampMode.ClampToEdge;
 		street.wrapY = TextureClampMode.ClampToEdge;
 		street.applyParameters();
+		Texture border = resources.load!Texture("textures/border.png");
+		border.wrapX = TextureClampMode.Mirror;
+		border.wrapY = TextureClampMode.Mirror;
+		border.applyParameters();
 		auto vehicle1 = resources.load!Texture("textures/vehicle1.png");
+		auto track = generateTrack;
+		mixin(createEntity!("Track", q{
+			EntityDisplay: track.roadMesh, shader, street, mat4.identity
+			Transformation: mat4.translation(0, 0, 0)
+			TrackCollision: track.outerRing, track.innerRing
+		}));
+		mixin(createEntity!("TrackL", q{
+			EntityDisplay: track.innerRingMesh, shader, border, mat4.identity
+			Transformation: mat4.translation(0, 0, 0)
+		}));
+		mixin(createEntity!("TrackR", q{
+			EntityDisplay: track.outerRingMesh, shader, border, mat4.identity
+			Transformation: mat4.translation(0, 0, 0)
+		}));
 		{
 			auto mesh = resources.load!Scene("models/vehicle1.obj").value.meshes[0].convertAssimpMesh;
 			mixin(createEntity!("Player", q{
 				EntityDisplay: mesh, shader, vehicle1, mat4.identity
 				Transformation: mat4.translation(0, 0, 0)
 				PlayerControls: Key.Up, Key.Left, Key.Down, Key.Right
-				VehiclePhysics:
-			}));
-		}
-		{
-			auto track = generateTrack;
-			mixin(createEntity!("Track", q{
-				EntityDisplay: track.mesh, shader, street, mat4.identity
-				Transformation: mat4.translation(0, 0, 0)
-				TrackCollision: track.outerRing, track.innerRing
+				VehiclePhysics: (track.innerRing[0] + track.outerRing[0]) * 0.5f
 			}));
 		}
 

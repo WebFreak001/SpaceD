@@ -32,10 +32,10 @@ struct PlayerControls
 
 struct VehiclePhysics
 {
-	vec2 linearVelocity = vec2(0, 0);
 	vec2 position = vec2(0, 0);
-	float angularVelocity = 0;
 	float rotation = 0;
+	vec2 linearVelocity = vec2(0, 0);
+	float angularVelocity = 0;
 	float cameraRotation = 0;
 	bool reversing = false;
 
