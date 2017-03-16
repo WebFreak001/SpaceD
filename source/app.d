@@ -53,7 +53,6 @@ void main()
 		void onResized(int width, int height)
 		{
 			renderer.resize(width, height);
-			renderer.projection.top = perspective(width, height, 45.0f, 5.0f, 1000.0f);
 		}
 
 		window.onResized ~= &onResized;
@@ -74,7 +73,7 @@ void main()
 
 		renderer.setupDepthTest(DepthFunc.Less);
 
-		world.addSystem!LogicSystem(renderer);
+		world.addSystem!LogicSystem(renderer, window);
 		world.addSystem!DisplaySystem(renderer, window);
 
 		auto test = resources.load!Texture("textures/test.png");

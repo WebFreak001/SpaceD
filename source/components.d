@@ -36,6 +36,8 @@ struct VehiclePhysics
 	vec2 position = vec2(0, 0);
 	float angularVelocity = 0;
 	float rotation = 0;
+	float cameraRotation = 0;
+	bool reversing = false;
 
 	mixin ComponentBase;
 }

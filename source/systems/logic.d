@@ -9,9 +9,10 @@ import components;
 class LogicSystem : ISystem
 {
 public:
-	this(Renderer renderer)
+	this(Renderer renderer, View window)
 	{
 		this.renderer = renderer;
+		this.window = window;
 	}
 
 	final void update(World world)
@@ -30,10 +31,18 @@ public:
 						{
 							physics.linearVelocity += vec2(sin(physics.rotation),
 									-cos(physics.rotation)) * world.delta * 50;
+							physics.reversing = false;
 						}
 						if (Keyboard.state.isKeyPressed(controls.decelerate))
 						{
-							physics.linearVelocity *= pow(0.5, world.delta);
+							if (physics.linearVelocity.length_squared >= 2 * 2 && !physics.reversing)
+								physics.linearVelocity *= pow(0.5, world.delta);
+							else
+							{
+								physics.reversing = true;
+								physics.linearVelocity -= vec2(sin(physics.rotation),
+										-cos(physics.rotation)) * world.delta * 50;
+							}
 						}
 						if (Keyboard.state.isKeyPressed(controls.steerLeft))
 						{
@@ -51,11 +60,18 @@ public:
 						physics.linearVelocity *= pow(0.5, world.delta);
 						physics.rotation += physics.angularVelocity * world.delta;
 						physics.position += physics.linearVelocity * world.delta;
+						physics.cameraRotation = (physics.cameraRotation - physics.rotation) * pow(0.2,
+								world.delta) + physics.rotation;
 						transform.transform = mat4.translation(physics.position.x, 0,
 								physics.position.y) * mat4.yrotation(-physics.rotation);
 						renderer.modelview.top = mat4.xrotation(cradians!20) * mat4.translation(0,
-								0, -15) * mat4.yrotation(physics.rotation) * mat4.translation(-physics.position.x,
+								0, -15) * mat4.yrotation(physics.cameraRotation) * mat4.translation(-physics.position.x,
 								-10, -physics.position.y);
+						float speedFov = physics.linearVelocity.length * 0.3f;
+						if (speedFov > 50)
+							speedFov = 50;
+						renderer.projection.top = perspective(window.width, window.height,
+								40.0f + speedFov, 5.0f, 1000.0f);
 					}
 				}
 			}
@@ -64,4 +80,5 @@ public:
 
 private:
 	Renderer renderer;
+	View window;
 }
