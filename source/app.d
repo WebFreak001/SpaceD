@@ -76,7 +76,10 @@ void main()
 		world.addSystem!LogicSystem(renderer, window);
 		world.addSystem!DisplaySystem(renderer, window);
 
-		auto test = resources.load!Texture("textures/test.png");
+		Texture street = resources.load!Texture("textures/street.png");
+		street.wrapX = TextureClampMode.ClampToEdge;
+		street.wrapY = TextureClampMode.ClampToEdge;
+		street.applyParameters();
 		auto vehicle1 = resources.load!Texture("textures/vehicle1.png");
 		{
 			auto mesh = resources.load!Scene("models/vehicle1.obj").value.meshes[0].convertAssimpMesh;
@@ -90,7 +93,7 @@ void main()
 		{
 			auto track = generateTrack;
 			mixin(createEntity!("Track", q{
-				EntityDisplay: track.mesh, shader, test, mat4.identity
+				EntityDisplay: track.mesh, shader, street, mat4.identity
 				Transformation: mat4.translation(0, 0, 0)
 				TrackCollision: track.outerRing, track.innerRing
 			}));

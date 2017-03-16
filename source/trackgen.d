@@ -12,13 +12,21 @@ struct Track
 	Mesh mesh;
 }
 
+T smooth(T, size_t l)(T[l] arr, size_t i, int n)
+{
+	T sum = arr[i];
+	for (int it = 1; it <= n; it++)
+		sum += arr[(i + it) % l] + arr[(i + l - it) % l];
+	return sum / cast(float)(n * 2 + 1);
+}
+
 Track generateTrack()
 {
 	enum RoadWidth = 30;
 	enum Scale = 400;
 
-	vec2[48] trackPath;
-	float[48] widthMuls;
+	vec2[96] trackPath;
+	float[96] widthMuls;
 	widthMuls[] = 1;
 	// generate circle
 	foreach (i, ref vec; trackPath)
@@ -33,10 +41,11 @@ Track generateTrack()
 		foreach (ref vec; trackPath)
 			vec *= uniform(1 - n, 1.1f + n);
 		foreach (i, ref vec; trackPath)
-			vec = trackPath[(i + $ - 2) % $] * 0.1f + trackPath[(
-					i + $ - 1) % $] * 0.2f + vec * 0.4f + trackPath[(
-					i + 1) % $] * 0.2f + trackPath[(i + 2) % $] * 0.1f;
+			vec = trackPath.smooth(i, 2);
 	}
+	// final smoothing
+	foreach (i, ref vec; trackPath)
+		vec = trackPath.smooth(i, 2);
 	Track track;
 	track.innerRing.reserve(trackPath.length);
 	track.outerRing.reserve(trackPath.length);
@@ -53,18 +62,17 @@ Track generateTrack()
 			vec2 dirA = (prev - pos).normalized;
 			vec2 dirB = (pos - next).normalized;
 
-			float mul = (dirA - dirB).length_squared * 8;
-			if (mul < 1)
-				mul = 1;
+			float mul = (dirA - dirB).length * 7 + 0.3f;
+			if (mul < 0.7f)
+				mul = 0.7f;
 			if (mul > 3)
 				mul = 3;
+			std.stdio.writeln(mul);
 			widthMuls[i] = mul;
 		}
 		// smooth width multipliers
 		foreach (i, ref mul; widthMuls)
-			mul = widthMuls[(i + $ - 2) % $] * 0.1f + widthMuls[(
-					i + $ - 1) % $] * 0.2f + mul * 0.4f + widthMuls[(
-					i + 1) % $] * 0.2f + widthMuls[(i + 2) % $] * 0.1f;
+			mul = widthMuls.smooth(i, 8);
 		// generate mesh data
 		foreach (i, pos; trackPath)
 		{
@@ -77,17 +85,19 @@ Track generateTrack()
 			vec2 avgDir = (dirA + dirB).normalized;
 			vec2 ortho = vec2(-avgDir.y, avgDir.x);
 
+			float uvX = (i % 2) == 0 ? 1 : 0;
+
 			mesh.addIndex(cast(int) i * 2);
 			mesh.addPosition(vec3(pos.x * Scale, 0, pos.y * Scale));
 			track.innerRing ~= pos;
-			mesh.addTexCoord(pos);
+			mesh.addTexCoord(vec2(uvX, 0));
 			mesh.addNormal(vec3(0, 1, 0));
 
 			mesh.addIndex(cast(int) i * 2 + 1);
 			mesh.addPosition(vec3(pos.x * Scale + ortho.x * RoadWidth * widthMuls[i], 0,
 					pos.y * Scale + ortho.y * RoadWidth * widthMuls[i]));
 			track.outerRing ~= pos * Scale + ortho * widthMuls[i];
-			mesh.addTexCoord(pos);
+			mesh.addTexCoord(vec2(uvX, 1));
 			mesh.addNormal(vec3(0, 1, 0));
 		}
 		mesh.addIndex(0);
