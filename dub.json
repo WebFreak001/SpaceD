@@ -1,0 +1,39 @@
+{
+	"name": "linuxjam",
+	"authors": [
+		"webfreak"
+	],
+	"description": "Entry for linux game jam https://itch.io/jam/linux-jam-2017",
+	"copyright": "Copyright © 2017, webfreak",
+	"license": "MIT",
+	"dependencies": {
+		"avocado:core": {
+			"path": "Avocado",
+			"version": "*"
+		},
+		"avocado:dfs": {
+			"path": "Avocado",
+			"version": "*"
+		},
+		"avocado:assimp": {
+			"path": "Avocado",
+			"version": "*"
+		},
+		"avocado:gl3": {
+			"path": "Avocado",
+			"version": "*"
+		},
+		"avocado:input": {
+			"path": "Avocado",
+			"version": "*"
+		},
+		"avocado:sdl2": {
+			"path": "Avocado",
+			"version": "*"
+		},
+		"avocado:bmfont": {
+			"path": "Avocado",
+			"version": "*"
+		}
+	}
+}

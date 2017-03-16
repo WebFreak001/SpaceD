@@ -1,0 +1,3 @@
+[submodule "Avocado"]
+	path = Avocado
+	url = https://github.com/TeamAvocado/Avocado

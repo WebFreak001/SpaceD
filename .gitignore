@@ -1,0 +1,10 @@
+.dub
+docs.json
+__dummy.html
+*.o
+*.obj
+!/res/models/*.obj
+__test__*__
+dub.selections.json
+/linuxjam
+*.blend1
