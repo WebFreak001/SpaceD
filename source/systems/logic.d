@@ -81,16 +81,16 @@ public:
 
 						enum HalfWidth = 2;
 						enum HalfHeight = 4;
-						vec2 tl = vec2(sin(physics.rotation) * -HalfWidth, cos(physics.rotation) * HalfHeight)
+						auto s = sin(physics.rotation);
+						auto c = cos(physics.rotation);
+						vec2 tl = vec2(-HalfWidth * c - HalfHeight * s, -HalfWidth * s + HalfHeight * c)
 							+ physics.position;
-						vec2 tr = vec2(sin(physics.rotation) * HalfWidth, cos(physics.rotation) * HalfHeight)
+						vec2 tr = vec2(HalfWidth * c - HalfHeight * s, HalfWidth * s + HalfHeight * c)
 							+ physics.position;
-						vec2 bl = vec2(sin(physics.rotation) * -HalfWidth, cos(physics.rotation) * -HalfHeight)
+						vec2 bl = vec2(-HalfWidth * c + HalfHeight * s, -HalfWidth * s - HalfHeight * c)
 							+ physics.position;
-						vec2 br = vec2(sin(physics.rotation) * HalfWidth, cos(physics.rotation) * -HalfHeight)
+						vec2 br = vec2(HalfWidth * c + HalfHeight * s, HalfWidth * s - HalfHeight * c)
 							+ physics.position;
-
-						std.stdio.writeln(tl);
 
 						foreach (other; world.entities)
 						{
