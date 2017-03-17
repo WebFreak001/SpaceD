@@ -1,8 +1,9 @@
 module app;
 
+import avocado.assimp;
+import avocado.bmfont;
 import avocado.core;
 import avocado.dfs;
-import avocado.assimp;
 import avocado.gl3;
 import avocado.sdl2;
 
@@ -19,6 +20,7 @@ alias ShaderUnit = GLShaderUnit;
 alias Texture = GLTexture;
 
 alias Mesh = GL3MeshIndexPositionTextureNormal;
+alias Font = BMFont!(Texture, ResourceManager);
 
 Mesh convertAssimpMesh(AssimpMeshData from)
 {
@@ -63,39 +65,50 @@ void main()
 		resources.prepend("res");
 		resources.prependAll("packs", "*.{pack,zip}");
 
+		auto defaultFrag = new ShaderUnit(ShaderType.Fragment,
+				resources.load!TextProvider("shaders/default.frag").value);
+		auto defaultVert = new ShaderUnit(ShaderType.Vertex,
+				resources.load!TextProvider("shaders/default.vert").value);
+		auto textureFrag = new ShaderUnit(ShaderType.Fragment,
+				resources.load!TextProvider("shaders/texture.frag").value);
+		auto skyboxVert = new ShaderUnit(ShaderType.Vertex,
+				resources.load!TextProvider("shaders/skybox.vert").value);
+		auto particleFrag = new ShaderUnit(ShaderType.Fragment,
+				resources.load!TextProvider("shaders/particle.frag").value);
+		auto particleVert = new ShaderUnit(ShaderType.Vertex,
+				resources.load!TextProvider("shaders/particle.vert").value);
+		auto textVert = new ShaderUnit(ShaderType.Vertex,
+				resources.load!TextProvider("shaders/text.vert").value);
+
 		auto shader = new Shader();
-		shader.attach(new ShaderUnit(ShaderType.Fragment,
-				resources.load!TextProvider("shaders/default.frag").value));
-		shader.attach(new ShaderUnit(ShaderType.Vertex,
-				resources.load!TextProvider("shaders/default.vert").value));
+		shader.attach(defaultFrag);
+		shader.attach(defaultVert);
 		shader.create(renderer);
 		shader.register(["modelview", "projection", "tex"]);
 		shader.set("tex", 0);
 
 		auto particleShader = new Shader();
-		particleShader.attach(new ShaderUnit(ShaderType.Fragment,
-				resources.load!TextProvider("shaders/particle.frag").value));
-		particleShader.attach(new ShaderUnit(ShaderType.Vertex,
-				resources.load!TextProvider("shaders/particle.vert").value));
+		particleShader.attach(particleFrag);
+		particleShader.attach(particleVert);
 		particleShader.create(renderer);
 		particleShader.register(["modelview", "projection", "orientation", "tex0", "tex1"]);
 		particleShader.set("tex0", 0);
 		particleShader.set("tex1", 1);
 
 		renderer.setupDepthTest(DepthFunc.Less);
-		renderer.enableBlend();
+
+		Shader textShader = new Shader(renderer, textVert, textureFrag);
+		Font font = resources.load!Font("fonts/roboto.fnt", resources, "fonts/");
 
 		world.addSystem!LogicSystem(renderer, window);
 		world.addSystem!DisplaySystem(renderer, window, new ParticleSystem!()(particleShader,
 				[resources.load!Texture("textures/smoke.png"),
-				resources.load!Texture("textures/plasma.png")]));
+				resources.load!Texture("textures/plasma.png")]), font, textShader);
 
 		{
 			auto skyboxShader = new Shader();
-			skyboxShader.attach(new ShaderUnit(ShaderType.Fragment,
-					resources.load!TextProvider("shaders/texture.frag").value));
-			skyboxShader.attach(new ShaderUnit(ShaderType.Vertex,
-					resources.load!TextProvider("shaders/skybox.vert").value));
+			skyboxShader.attach(textureFrag);
+			skyboxShader.attach(skyboxVert);
 			skyboxShader.create(renderer);
 			skyboxShader.register(["modelview", "projection", "tex"]);
 			skyboxShader.set("tex", 0);

@@ -4,6 +4,7 @@ import avocado.core;
 import avocado.gl3;
 
 import app;
+import text;
 import components;
 import particles;
 
@@ -12,11 +13,12 @@ alias SkyboxMesh = GL3Mesh!(PositionElement, TexCoordElement);
 class DisplaySystem : ISystem
 {
 public:
-	this(Renderer renderer, View window, ParticleSystem!() particles)
+	this(Renderer renderer, View window, ParticleSystem!() particles, Font font, Shader textShader)
 	{
 		this.renderer = renderer;
 		this.window = window;
 		this.particles = particles;
+		text = new Text(font, textShader);
 
 		skyboxMesh = new SkyboxMesh();
 		//dfmt off
@@ -106,6 +108,7 @@ public:
 	final void update(World world)
 	{
 		renderer.begin(window);
+		renderer.enableBlend();
 		renderer.clear();
 		particles.update(world.delta);
 		float camRotation;
@@ -162,6 +165,21 @@ public:
 			}
 		}
 		particles.draw(renderer, camRotation);
+		renderer.bind2D();
+		renderer.modelview.push();
+		renderer.modelview = mat4.identity;
+		renderer.modelview.push();
+		renderer.modelview.top *= mat4.translation(20, window.height - 20, 0) * mat4.scaling(768 * 0.5f, 512 * 0.5f, 1);
+		text.text = "Lap 1 / 3"d;
+		text.draw(renderer);
+		renderer.modelview.pop();
+		renderer.modelview.push();
+		text.text = "1 / 8"d;
+		renderer.modelview.top *= mat4.translation(window.width - text.textWidth * 768 - 20, window.height - 20, 0) * mat4.scaling(768, 512, 1);
+		text.draw(renderer);
+		renderer.modelview.pop();
+		renderer.modelview.pop();
+		renderer.bind3D();
 		renderer.end(window);
 	}
 
@@ -170,4 +188,5 @@ private:
 	View window;
 	ParticleSystem!() particles;
 	SkyboxMesh skyboxMesh;
+	Text text;
 }

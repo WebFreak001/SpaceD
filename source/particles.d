@@ -79,10 +79,10 @@ public:
 		renderer.drawMeshInstanced(particles, ParticlesMax);
 	}
 
+	Texture[] textures;
 private:
 	ParticleStream particles;
 	Shader shader;
-	Texture[] textures;
 
 	vec3[ParticlesMax] particlePositions;
 	int[ParticlesMax] particleTextures;
