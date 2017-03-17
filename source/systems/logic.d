@@ -79,6 +79,7 @@ public:
 						physics.rotation += physics.angularVelocity * world.delta;
 						physics.position += physics.linearVelocity * world.delta;
 
+						enum HalfFrontWidth = 1;
 						enum HalfWidth = 2;
 						enum HalfHeight = 4;
 						auto s = sin(physics.rotation);
@@ -87,9 +88,9 @@ public:
 							+ physics.position;
 						vec2 tr = vec2(HalfWidth * c - HalfHeight * s, HalfWidth * s + HalfHeight * c)
 							+ physics.position;
-						vec2 bl = vec2(-HalfWidth * c + HalfHeight * s, -HalfWidth * s - HalfHeight * c)
+						vec2 bl = vec2(-HalfFrontWidth * c + HalfHeight * s, -HalfFrontWidth * s - HalfHeight * c)
 							+ physics.position;
-						vec2 br = vec2(HalfWidth * c + HalfHeight * s, HalfWidth * s - HalfHeight * c)
+						vec2 br = vec2(HalfFrontWidth * c + HalfHeight * s, HalfFrontWidth * s - HalfHeight * c)
 							+ physics.position;
 
 						foreach (other; world.entities)
