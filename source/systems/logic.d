@@ -48,7 +48,8 @@ public:
 						if (Keyboard.state.isKeyPressed(controls.accelerate))
 						{
 							physics.linearVelocity += vec2(sin(physics.rotation),
-									-cos(physics.rotation)) * world.delta * 50;
+									-cos(physics.rotation)) * world.delta * (Keyboard.state.isKeyPressed(controls.boost)
+									? 100 : 50);
 							physics.reversing = false;
 						}
 						if (Keyboard.state.isKeyPressed(controls.decelerate))
@@ -59,7 +60,8 @@ public:
 							{
 								physics.reversing = true;
 								physics.linearVelocity -= vec2(sin(physics.rotation),
-										-cos(physics.rotation)) * world.delta * 50;
+										-cos(physics.rotation)) * world.delta * (Keyboard.state.isKeyPressed(controls.boost)
+										? 100 : 50);
 							}
 						}
 						if (Keyboard.state.isKeyPressed(controls.steerLeft))
@@ -88,8 +90,8 @@ public:
 							+ physics.position;
 						vec2 tr = vec2(HalfWidth * c - HalfHeight * s, HalfWidth * s + HalfHeight * c)
 							+ physics.position;
-						vec2 bl = vec2(-HalfFrontWidth * c + HalfHeight * s, -HalfFrontWidth * s - HalfHeight * c)
-							+ physics.position;
+						vec2 bl = vec2(-HalfFrontWidth * c + HalfHeight * s, -HalfFrontWidth * s - HalfHeight
+								* c) + physics.position;
 						vec2 br = vec2(HalfFrontWidth * c + HalfHeight * s, HalfFrontWidth * s - HalfHeight * c)
 							+ physics.position;
 

@@ -25,7 +25,7 @@ struct EntityDisplay
 
 struct PlayerControls
 {
-	Key accelerate, steerLeft, decelerate, steerRight;
+	Key accelerate, steerLeft, decelerate, steerRight, boost;
 
 	mixin ComponentBase;
 }

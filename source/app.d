@@ -104,7 +104,7 @@ void main()
 			mixin(createEntity!("Player", q{
 				EntityDisplay: mesh, shader, vehicle1, mat4.identity
 				Transformation: mat4.translation(0, 0, 0)
-				PlayerControls: Key.Up, Key.Left, Key.Down, Key.Right
+				PlayerControls: Key.Up, Key.Left, Key.Down, Key.Right, Key.RShift
 				VehiclePhysics: (track.innerRing[0] + track.outerRing[0]) * 0.5f
 			}));
 		}
