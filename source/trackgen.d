@@ -92,7 +92,7 @@ Track generateTrack()
 			float uvX = (i % 2) == 0 ? 1 : 0;
 
 			vec2 inPos = pos * Scale;
-			vec2 outPos = pos * Scale + ortho * RoadWidth * widthMuls[i];
+			vec2 outPos = pos * Scale - ortho * RoadWidth * widthMuls[i];
 
 			track.innerRing ~= inPos;
 			track.outerRing ~= outPos;

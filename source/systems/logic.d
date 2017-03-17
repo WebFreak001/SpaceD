@@ -6,6 +6,24 @@ import avocado.input;
 import app;
 import components;
 
+private bool lineLineIntersects(vec2 l1a, vec2 l1b, vec2 l2a, vec2 l2b)
+{
+	vec2 l1 = l1b - l1a;
+	vec2 l2 = l2b - l2a;
+	float dot = l1.x * l2.y - l1.y * l2.x;
+	if (dot == 0)
+		return l1.normalized == l2.normalized;
+	vec2 c = l2a - l1a;
+	float t = (c.x * l2.y - c.y * l2.x) / dot;
+	if (t < 0 || t > 1)
+		return false;
+
+	float u = (c.x * l1.y - c.y * l1.x) / dot;
+	if (u < 0 || u > 1)
+		return false;
+	return true;
+}
+
 class LogicSystem : ISystem
 {
 public:
@@ -60,6 +78,81 @@ public:
 						physics.linearVelocity *= pow(0.5, world.delta);
 						physics.rotation += physics.angularVelocity * world.delta;
 						physics.position += physics.linearVelocity * world.delta;
+
+						enum HalfWidth = 2;
+						enum HalfHeight = 4;
+						vec2 tl = vec2(sin(physics.rotation) * -HalfWidth, cos(physics.rotation) * HalfHeight)
+							+ physics.position;
+						vec2 tr = vec2(sin(physics.rotation) * HalfWidth, cos(physics.rotation) * HalfHeight)
+							+ physics.position;
+						vec2 bl = vec2(sin(physics.rotation) * -HalfWidth, cos(physics.rotation) * -HalfHeight)
+							+ physics.position;
+						vec2 br = vec2(sin(physics.rotation) * HalfWidth, cos(physics.rotation) * -HalfHeight)
+							+ physics.position;
+
+						std.stdio.writeln(tl);
+
+						foreach (other; world.entities)
+						{
+							if (other.alive)
+							{
+								TrackCollision* track;
+								if (other.fetch(track))
+								{
+									foreach (i, a; track.innerRing)
+									{
+										auto b = track.innerRing[(i + 1) % $];
+										auto nrm = (a - b).yx.normalized;
+										nrm.y = -nrm.y;
+										for (int repeat = 0; repeat < 10 && (lineLineIntersects(a, b, tl, tr)
+												|| lineLineIntersects(a, b, tr, br) || lineLineIntersects(a,
+												b, br, bl) || lineLineIntersects(a, b, bl, tl)); repeat++)
+										{
+											if (repeat == 0)
+											{
+												physics.linearVelocity *= 0.95f;
+												physics.linearVelocity += nrm;
+											}
+											tl -= physics.position;
+											tr -= physics.position;
+											bl -= physics.position;
+											br -= physics.position;
+											physics.position += nrm * 0.05f;
+											tl += physics.position;
+											tr += physics.position;
+											bl += physics.position;
+											br += physics.position;
+										}
+									}
+									foreach (i, b; track.outerRing)
+									{
+										auto a = track.outerRing[(i + 1) % $];
+										auto nrm = (a - b).yx.normalized;
+										nrm.y = -nrm.y;
+										for (int repeat = 0; repeat < 10 && (lineLineIntersects(a, b, tl, tr)
+												|| lineLineIntersects(a, b, tr, br) || lineLineIntersects(a,
+												b, br, bl) || lineLineIntersects(a, b, bl, tl)); repeat++)
+										{
+											if (repeat == 0)
+											{
+												physics.linearVelocity *= 0.95f;
+												physics.linearVelocity += nrm;
+											}
+											tl -= physics.position;
+											tr -= physics.position;
+											bl -= physics.position;
+											br -= physics.position;
+											physics.position += nrm * 0.05f;
+											tl += physics.position;
+											tr += physics.position;
+											bl += physics.position;
+											br += physics.position;
+										}
+									}
+								}
+							}
+						}
+
 						physics.cameraRotation = (physics.cameraRotation - physics.rotation) * pow(0.2,
 								world.delta) + physics.rotation;
 						transform.transform = mat4.translation(physics.position.x, 0,
