@@ -54,7 +54,7 @@ public:
 						enum HalfWidth = 2;
 						enum HalfExhaustWidth = 1.5f;
 						enum HalfExhaustWidth2 = 1.1f;
-						enum HalfHeight = 4;
+						enum HalfHeight = 3.8f;
 						auto s = sin(physics.rotation);
 						auto c = cos(physics.rotation);
 						vec2 tl = vec2(-HalfWidth * c - HalfHeight * s, -HalfWidth * s + HalfHeight * c)
