@@ -1,6 +1,7 @@
 module components;
 
 import app;
+import particles;
 
 import avocado.core;
 import avocado.sdl2;
@@ -46,6 +47,20 @@ struct TrackCollision
 {
 	vec2[] outerRing;
 	vec2[] innerRing;
+
+	mixin ComponentBase;
+}
+
+struct ParticleSpawner
+{
+	struct Data
+	{
+		vec3 pos;
+		uint tex;
+		ParticleInfo info;
+	}
+	Data[] toSpawn;
+	float time = 0;
 
 	mixin ComponentBase;
 }

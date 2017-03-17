@@ -4,20 +4,24 @@ import avocado.core;
 
 import app;
 import components;
+import particles;
 
 class DisplaySystem : ISystem
 {
 public:
-	this(Renderer renderer, View window)
+	this(Renderer renderer, View window, ParticleSystem!() particles)
 	{
 		this.renderer = renderer;
 		this.window = window;
+		this.particles = particles;
 	}
 
 	final void update(World world)
 	{
 		renderer.begin(window);
 		renderer.clear();
+		particles.update(world.delta);
+		float camRotation;
 		foreach (entity; world.entities)
 		{
 			if (entity.alive)
@@ -35,12 +39,31 @@ public:
 						renderer.modelview.pop();
 					}
 				}
+				{
+					VehiclePhysics phys;
+					if (entity.fetch(phys))
+						camRotation = phys.cameraRotation;
+				}
+				{
+					ParticleSpawner* spawner;
+					if (entity.fetch(spawner))
+					{
+						if (spawner.toSpawn.length)
+						{
+							foreach (part; spawner.toSpawn)
+								particles.spawnParticle(part.pos, part.tex, part.info);
+							spawner.toSpawn.length = 0;
+						}
+					}
+				}
 			}
 		}
+		particles.draw(renderer, camRotation);
 		renderer.end(window);
 	}
 
 private:
 	Renderer renderer;
 	View window;
+	ParticleSystem!() particles;
 }

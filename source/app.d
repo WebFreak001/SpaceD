@@ -10,6 +10,7 @@ import components;
 import systems.display;
 import systems.logic;
 import trackgen;
+import particles;
 
 alias View = SDLWindow;
 alias Renderer = GL3Renderer;
@@ -71,10 +72,23 @@ void main()
 		shader.register(["modelview", "projection", "tex"]);
 		shader.set("tex", 0);
 
+		auto particleShader = new Shader();
+		particleShader.attach(new ShaderUnit(ShaderType.Fragment,
+				resources.load!TextProvider("shaders/particle.frag").value));
+		particleShader.attach(new ShaderUnit(ShaderType.Vertex,
+				resources.load!TextProvider("shaders/particle.vert").value));
+		particleShader.create(renderer);
+		particleShader.register(["modelview", "projection", "orientation", "tex0", "tex1"]);
+		particleShader.set("tex0", 0);
+		particleShader.set("tex1", 1);
+
 		renderer.setupDepthTest(DepthFunc.Less);
+		renderer.enableBlend();
 
 		world.addSystem!LogicSystem(renderer, window);
-		world.addSystem!DisplaySystem(renderer, window);
+		world.addSystem!DisplaySystem(renderer, window, new ParticleSystem!()(particleShader,
+				[resources.load!Texture("textures/smoke.png"),
+				resources.load!Texture("textures/plasma.png")]));
 
 		Texture street = resources.load!Texture("textures/street.png");
 		street.wrapX = TextureClampMode.ClampToEdge;
@@ -106,6 +120,7 @@ void main()
 				Transformation: mat4.translation(0, 0, 0)
 				PlayerControls: Key.Up, Key.Left, Key.Down, Key.Right, Key.RShift
 				VehiclePhysics: (track.innerRing[0] + track.outerRing[0]) * 0.5f
+				ParticleSpawner:
 			}));
 		}
 
