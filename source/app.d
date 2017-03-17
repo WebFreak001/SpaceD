@@ -51,6 +51,7 @@ void main()
 	{
 		auto window = new View("Fluffy");
 		auto renderer = new Renderer;
+		window.setOpenGLVersion(3, 3);
 		auto world = add(window, renderer);
 
 		void onResized(int width, int height)
