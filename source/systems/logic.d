@@ -160,8 +160,9 @@ public:
 											{
 												if (canParticle)
 													particles.toSpawn ~= ParticleSpawner.Data(vec3(intersection.x,
-															0, intersection.y), 0, ParticleInfo(vec4(1, 1, 1,
-															1), 4, 0, vec3(0, 10, 0), 0.8f));
+															0, intersection.y), 0, ParticleInfo(vec4(1, 1, 1, 1),
+															4, 0, vec3(physics.linearVelocity.x, 10,
+															physics.linearVelocity.y), 0.8f));
 												physics.linearVelocity *= 0.95f;
 												physics.linearVelocity += nrm;
 											}
@@ -191,8 +192,9 @@ public:
 											{
 												if (canParticle)
 													particles.toSpawn ~= ParticleSpawner.Data(vec3(intersection.x,
-															0, intersection.y), 0, ParticleInfo(vec4(1, 1, 1,
-															1), 4, -1, vec3(0, 10, 0), 0.5f));
+															0, intersection.y), 0, ParticleInfo(vec4(1, 1, 1, 1),
+															4, -1, vec3(physics.linearVelocity.x, 10,
+															physics.linearVelocity.y), 0.5f));
 												physics.linearVelocity *= 0.95f;
 												physics.linearVelocity += nrm;
 											}

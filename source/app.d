@@ -90,6 +90,21 @@ void main()
 				[resources.load!Texture("textures/smoke.png"),
 				resources.load!Texture("textures/plasma.png")]));
 
+		{
+			auto skyboxShader = new Shader();
+			skyboxShader.attach(new ShaderUnit(ShaderType.Fragment,
+					resources.load!TextProvider("shaders/texture.frag").value));
+			skyboxShader.attach(new ShaderUnit(ShaderType.Vertex,
+					resources.load!TextProvider("shaders/skybox.vert").value));
+			skyboxShader.create(renderer);
+			skyboxShader.register(["modelview", "projection", "tex"]);
+			skyboxShader.set("tex", 0);
+			auto skyTex = resources.load!Texture("textures/skybox.png");
+			mixin(createEntity!("Skybox", q{
+				Skybox: skyboxShader, skyTex
+			}));
+		}
+
 		Texture street = resources.load!Texture("textures/street.png");
 		street.wrapX = TextureClampMode.ClampToEdge;
 		street.wrapY = TextureClampMode.ClampToEdge;

@@ -59,8 +59,17 @@ struct ParticleSpawner
 		uint tex;
 		ParticleInfo info;
 	}
+
 	Data[] toSpawn;
 	float time = 0;
+
+	mixin ComponentBase;
+}
+
+struct Skybox
+{
+	Shader shader;
+	Texture texture;
 
 	mixin ComponentBase;
 }
