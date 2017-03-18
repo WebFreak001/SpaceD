@@ -10,6 +10,8 @@ enum SymmetricKey = "lol security";
 struct GlobalState
 {
 	uint money;
+	ulong bestTime;
+	ubyte[32] reserved;
 	struct Upgrades
 	{
 		ubyte boostLevel;
@@ -34,6 +36,8 @@ struct GlobalState
 	{
 		ubyte[] serialized;
 		serialized ~= money.nativeToBigEndian;
+		serialized ~= bestTime.nativeToBigEndian;
+		serialized ~= reserved;
 		serialized ~= binUpgrades;
 		serialized ~= crc32Of(serialized)[];
 		foreach (i, ref b; serialized)
@@ -62,7 +66,11 @@ struct GlobalState
 			if (index + 4 >= serialized.length)
 				return;
 			money = serialized.peek!uint(&index);
-			binUpgrades[0 .. serialized.length - 4] = serialized[4 .. $];
+			if (serialized.length < 40)
+				return;
+			bestTime = serialized.peek!ulong(&index);
+			index += 32;
+			binUpgrades[0 .. serialized.length - 44] = serialized[44 .. $];
 		}
 	}
 }

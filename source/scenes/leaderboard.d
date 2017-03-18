@@ -39,9 +39,12 @@ class LeaderboardScene : IScene
 
 		for (int i = 0; i < 8; i++)
 			texts[i] = world.newEntity("Leaderboard Line " ~ i.to!string)
-				.add!GUIText(""d, vec2(150, 50 + i * 50), vec2(1, 1)).finalize();
+				.add!GUIText(""d, vec2(350, 50 + i * 50), vec2(1, 1)).finalize();
 		extraInfo = world.newEntity("Extra Info").add!GUIText(""d, vec2(150,
 				50 + 8 * 50), vec2(1, 1)).finalize();
+		curTime = world.newEntity("Best Time:").add!GUIText(""d, vec2(10, 100), vec2(1, 1)).finalize();
+		bestTime = world.newEntity("Best Time:").add!GUIText(""d, vec2(10, 150),
+				vec2(1, 1)).finalize();
 	}
 
 	override void preEnter(IScene prev)
@@ -51,10 +54,12 @@ class LeaderboardScene : IScene
 		if (cast(IngameScene) prev)
 		{
 			auto game = cast(IngameScene) prev;
+			RaceInfo info;
 			VehiclePhysics phys;
 			int playerRanking;
 			foreach (entity; game.world.entities)
 			{
+				entity.fetch(info);
 				if (entity.fetch(phys))
 				{
 					dstring name = "Bot"d;
@@ -66,6 +71,18 @@ class LeaderboardScene : IScene
 					texts[phys.place].get!GUIText.text = phys.place.to!dstring.placement ~ " "d ~ name;
 				}
 			}
+			ulong msecs = cast(ulong) (info.time * 1000);
+			if (globalState.bestTime == 0 || msecs < globalState.bestTime)
+			{
+				globalState.bestTime = msecs;
+				curTime.get!GUIText.text = "New Personal Best!"d;
+				bestTime.get!GUIText.text = "Time: "d ~ msecs.makeTime;
+			}
+			else
+			{
+				curTime.get!GUIText.text = "Time: "d ~ msecs.makeTime;
+				bestTime.get!GUIText.text = "Best: "d ~ globalState.bestTime.makeTime;
+			}
 			int earnedMoney = 0;
 			if (playerRanking == 1)
 				earnedMoney = 100;
@@ -73,12 +90,10 @@ class LeaderboardScene : IScene
 				earnedMoney = 50;
 			else if (playerRanking == 3)
 				earnedMoney = 25;
-			extraInfo.get!GUIText.text = "You have earned "d ~ earnedMoney.to!dstring ~ "ĸ in this Race"d;
-			if (earnedMoney)
-			{
-				globalState.money += earnedMoney;
-				globalState.save();
-			}
+			extraInfo.get!GUIText.text = "You have earned "d ~ earnedMoney.to!dstring
+				~ "ĸ in this Race"d;
+			globalState.money += earnedMoney;
+			globalState.save();
 		}
 	}
 
@@ -87,7 +102,21 @@ class LeaderboardScene : IScene
 	}
 
 	Entity[8] texts;
-	Entity extraInfo;
+	Entity extraInfo, curTime, bestTime;
+}
+
+dstring ndigit(ulong digit, uint n)
+{
+	dstring s = digit.to!dstring;
+	while (s.length < n)
+		s = '0' ~ s;
+	return s;
+}
+
+dstring makeTime(ulong msecs)
+{
+	ulong secs = msecs / 1000;
+	return (secs / 60).ndigit(2) ~ ':' ~ (secs % 60).ndigit(2) ~ '.' ~ (msecs % 1000).ndigit(4);
 }
 
 dstring placement(dstring s)
