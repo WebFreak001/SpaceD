@@ -149,6 +149,8 @@ public:
 								int boost = 25;
 								if (hasControls)
 									boost += globalState.upgrades.boostLevel * 8;
+								else
+									boost += globalState.upgrades.boostLevel * 5;
 								if (!shouldBoost)
 									boost = 0;
 								physics.linearVelocity += vec2(sin(physics.rotation),
