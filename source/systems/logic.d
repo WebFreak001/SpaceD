@@ -28,11 +28,10 @@ private bool lineLineIntersects(vec2 l1a, vec2 l1b, vec2 l2a, vec2 l2b, ref vec2
 	return true;
 }
 
-private bool playerPlayerIntersects(vec2[4] a, vec2[4] b)
+private bool playerPlayerIntersects(vec2[4] a, vec2[4] b, ref vec2 i)
 {
 	if ((a[0] - b[0]).length_squared > 10 * 10)
 		return false;
-	vec2 i;
 	//dfmt off
 	return lineLineIntersects(a[0], a[1], b[0], b[1], i)
 		|| lineLineIntersects(a[0], a[1], b[1], b[2], i)
@@ -212,12 +211,18 @@ public:
 									auto otherCorners = otherCar.generateCornersAndExhaust;
 									vec2 nrm = physics.position - otherCar.position;
 									nrm.normalize;
+									vec2 intersection;
 									for (int repeat = 0; repeat < 4
-											&& playerPlayerIntersects(corners[0 .. 4], otherCorners[0 .. 4]);
+											&& playerPlayerIntersects(corners[0 .. 4], otherCorners[0 .. 4], intersection);
 										repeat++)
 									{
 										if (repeat == 0)
 										{
+											if (canParticle)
+												particles.toSpawn ~= ParticleSpawner.Data(vec3(intersection.x,
+														0, intersection.y), 0, ParticleInfo(vec4(1, 1, 1, 1),
+														4, 0, vec3(physics.linearVelocity.x * 0.03f, 10,
+														physics.linearVelocity.y * 0.03f), 0.8f));
 											physics.linearVelocity *= 0.95f;
 											otherCar.linearVelocity *= 0.95f;
 											physics.linearVelocity += nrm;
