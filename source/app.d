@@ -104,7 +104,7 @@ void main()
 		world.addSystem!LogicSystem(renderer, window);
 		world.addSystem!DisplaySystem(renderer, window, new ParticleSystem!(2048)(particleShader,
 				[resources.load!Texture("textures/smoke.png"),
-				resources.load!Texture("textures/plasma.png")]), font, textShader);
+				resources.load!Texture("textures/plasma.png")]), font, textShader, resources);
 
 		{
 			auto skyboxShader = new Shader();
