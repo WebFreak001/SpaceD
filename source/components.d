@@ -42,6 +42,12 @@ struct VehicleAI
 
 struct VehiclePhysics
 {
+	this(vec2 position, float rotation)
+	{
+		this.position = startPosition = position;
+		this.rotation = rotation;
+	}
+
 	vec2 position = vec2(0, 0);
 	float rotation = 0;
 	vec2 linearVelocity = vec2(0, 0);
@@ -53,6 +59,7 @@ struct VehiclePhysics
 	ubyte place = 0;
 	int lastCheck = -1;
 	bool player = false;
+	vec2 startPosition;
 
 	mixin ComponentBase;
 

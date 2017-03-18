@@ -149,6 +149,27 @@ class IngameScene : IScene
 
 	override void preEnter(IScene prev)
 	{
+		foreach (entity; world.entities)
+		{
+			RaceInfo* info;
+			if (entity.fetch(info))
+				info.time = -3;
+			VehiclePhysics* vehicle;
+			if (entity.fetch(vehicle))
+			{
+				vec2 pos = vehicle.startPosition;
+				float rot = PI * 0.5f;
+				*vehicle = VehiclePhysics.init;
+				vehicle.position = vehicle.startPosition = pos;
+				vehicle.rotation = rot;
+			}
+			VehicleAI* ai;
+			if (entity.fetch(ai))
+			{
+				ai.nextWaypoint = vec2(float.nan);
+				ai.trackIndex = 0;
+			}
+		}
 	}
 
 	override void postExit(IScene next)
