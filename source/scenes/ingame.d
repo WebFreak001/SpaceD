@@ -42,7 +42,7 @@ class IngameScene : IScene
 		Shader textShader = new Shader(renderer, textVert, textureFrag);
 		Font font = resources.load!Font("fonts/roboto.fnt", resources, "fonts/");
 
-		particles = new ParticleSystem!(2048)(particleShader,
+		particles = new ParticleSystem!(8192)(particleShader,
 				[resources.load!Texture("textures/smoke.png"),
 				resources.load!Texture("textures/plasma.png")]);
 
@@ -103,7 +103,7 @@ class IngameScene : IScene
 		particles.clear();
 		string[] toDelete = [
 			"Track", "TrackL", "TrackR", "Start Pole Left", "Start Pole Right",
-			"Bot 1", "Player", "Bot 2", "Bot 3"
+			"Bot 1", "Player", "Bot 2", "Bot 3", "Bot 4", "Bot 5", "Bot 6", "Bot 7"
 		];
 		foreach_reverse (i, entity; world.entities)
 		{
@@ -142,7 +142,7 @@ class IngameScene : IScene
 			mixin(createEntity!("Bot 1", q{
 				EntityDisplay: vehicleMesh, shader, vehicle1, mat4.identity
 				Transformation: mat4.translation(0, 0, 0)
-				VehiclePhysics: track.innerRing[$ - 1] * 0.2f + track.outerRing[$ - 1] * 0.8f, PI * 0.5f
+				VehiclePhysics: track.innerRing[0] * 0.2f + track.outerRing[0] * 0.8f, PI * 0.5f
 				VehicleAI:
 				ParticleSpawner:
 			}));
@@ -156,7 +156,7 @@ class IngameScene : IScene
 			mixin(createEntity!("Bot 2", q{
 				EntityDisplay: vehicleMesh, shader, vehicle1, mat4.identity
 				Transformation: mat4.translation(0, 0, 0)
-				VehiclePhysics: track.innerRing[$ - 1] * 0.6f + track.outerRing[$ - 1] * 0.4f, PI * 0.5f
+				VehiclePhysics: track.innerRing[0] * 0.6f + track.outerRing[0] * 0.4f, PI * 0.5f
 				VehicleAI:
 				ParticleSpawner:
 			}));
@@ -167,6 +167,34 @@ class IngameScene : IScene
 				VehicleAI:
 				ParticleSpawner:
 			}));
+			mixin(createEntity!("Bot 4", q{
+				EntityDisplay: vehicleMesh, shader, vehicle1, mat4.identity
+				Transformation: mat4.translation(0, 0, 0)
+				VehiclePhysics: track.innerRing[$ - 1] * 0.2f + track.outerRing[$ - 1] * 0.8f, PI * 0.5f
+				VehicleAI:
+				ParticleSpawner:
+			}));
+			mixin(createEntity!("Bot 5", q{
+				EntityDisplay: vehicleMesh, shader, vehicle1, mat4.identity
+				Transformation: mat4.translation(0, 0, 0)
+				VehiclePhysics: track.innerRing[$ - 1] * 0.4f + track.outerRing[$ - 1] * 0.6f, PI * 0.5f
+				VehicleAI:
+				ParticleSpawner:
+			}));
+			mixin(createEntity!("Bot 6", q{
+				EntityDisplay: vehicleMesh, shader, vehicle1, mat4.identity
+				Transformation: mat4.translation(0, 0, 0)
+				VehiclePhysics: track.innerRing[$ - 1] * 0.6f + track.outerRing[$ - 1] * 0.4f, PI * 0.5f
+				VehicleAI:
+				ParticleSpawner:
+			}));
+			mixin(createEntity!("Bot 7", q{
+				EntityDisplay: vehicleMesh, shader, vehicle1, mat4.identity
+				Transformation: mat4.translation(0, 0, 0)
+				VehiclePhysics: track.innerRing[$ - 1] * 0.8f + track.outerRing[$ - 1] * 0.2f, PI * 0.5f
+				VehicleAI:
+				ParticleSpawner:
+			}));
 		}
 	}
 
@@ -174,7 +202,7 @@ class IngameScene : IScene
 	{
 	}
 
-	ParticleSystem!(2048) particles;
+	ParticleSystem!(8192) particles;
 	Texture vehicle1, poleTex, street, border;
 	Mesh vehicleMesh, poleMesh;
 	Shader shader;

@@ -68,7 +68,7 @@ class LeaderboardScene : IScene
 						name = "Player"d;
 						playerRanking = phys.place;
 					}
-					texts[phys.place].get!GUIText.text = phys.place.to!dstring.placement ~ " "d ~ name;
+					texts[phys.place - 1].get!GUIText.text = phys.place.to!dstring.placement ~ " "d ~ name;
 				}
 			}
 			ulong msecs = cast(ulong) (info.time * 1000);

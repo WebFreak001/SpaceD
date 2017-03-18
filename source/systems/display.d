@@ -18,7 +18,7 @@ alias SkyboxMesh = GL3Mesh!(PositionElement, TexCoordElement);
 class DisplaySystem : ISystem
 {
 public:
-	this(Renderer renderer, View window, ParticleSystem!(2048) particles, Font font,
+	this(Renderer renderer, View window, ParticleSystem!(8192) particles, Font font,
 			Shader textShader, ResourceManager res, SceneManager sceneManager)
 	{
 		this.renderer = renderer;
@@ -250,7 +250,7 @@ private:
 	Renderer renderer;
 	View window;
 	Texture[8] places;
-	ParticleSystem!(2048) particles;
+	ParticleSystem!(8192) particles;
 	SkyboxMesh skyboxMesh;
 	SceneManager sceneManager;
 	Text text;
