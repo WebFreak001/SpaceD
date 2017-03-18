@@ -72,6 +72,11 @@ public:
 		return _textWidth;
 	}
 
+	float lineHeight()
+	{
+		return _font.value.common.lineHeight * _iHeight;
+	}
+
 private:
 	float _textWidth;
 	dstring _textStr;

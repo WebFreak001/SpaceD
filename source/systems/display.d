@@ -8,6 +8,7 @@ import app;
 import text;
 import components;
 import particles;
+import scenemanager;
 
 import std.algorithm;
 import std.conv;
@@ -18,12 +19,13 @@ class DisplaySystem : ISystem
 {
 public:
 	this(Renderer renderer, View window, ParticleSystem!(2048) particles, Font font,
-			Shader textShader, ResourceManager res)
+			Shader textShader, ResourceManager res, SceneManager sceneManager)
 	{
 		this.renderer = renderer;
 		this.window = window;
 		this.particles = particles;
 		text = new Text(font, textShader);
+		this.sceneManager = sceneManager;
 
 		skyboxMesh = new SkyboxMesh();
 		{ // Skybox
@@ -122,12 +124,14 @@ public:
 		renderer.clear();
 		particles.update(world.delta);
 		float camRotation;
+		RaceInfo* raceInfo;
 		VehiclePhysics*[] allPlayers;
 		ubyte lap = 0;
 		foreach (entity; world.entities)
 		{
 			if (entity.alive)
 			{
+				entity.fetch(raceInfo);
 				{
 					EntityDisplay display;
 					Transformation transform;
@@ -148,7 +152,7 @@ public:
 						if (entity.has!PlayerControls)
 						{
 							camRotation = phys.cameraRotation;
-							lap = cast(ubyte)(phys.currentCheckpoint / phys.numCheckpoints + 1);
+							lap = cast(ubyte)(phys.currentCheckpoint / max(1, phys.numCheckpoints) + 1);
 							phys.player = true;
 						}
 						allPlayers ~= phys;
@@ -188,18 +192,30 @@ public:
 		renderer.bind2D();
 		renderer.modelview.push();
 		renderer.modelview = mat4.identity;
-		drawRacingUI(lap, allPlayers);
+		drawRacingUI(lap, allPlayers, raceInfo);
 		renderer.modelview.pop();
 		renderer.bind3D();
 		renderer.end(window);
+		if (lap > maxLaps)
+			sceneManager.setScene("leaderboards");
 	}
 
-	void drawRacingUI(ubyte lap, VehiclePhysics*[] allPlayers)
+	void drawRacingUI(ubyte lap, VehiclePhysics*[] allPlayers, RaceInfo* raceInfo)
 	{
+		if (raceInfo.time < 0)
+		{
+			int sec = cast(int)-raceInfo.time + 1;
+			renderer.modelview.push();
+			text.text = sec.to!dstring;
+			renderer.modelview.top *= mat4.translation(window.width / 2 - text.textWidth * 768 * 2,
+					window.height / 2, 0) * mat4.scaling(768 * 4, 512 * 4, 1);
+			text.draw(renderer);
+			renderer.modelview.pop();
+		}
 		renderer.modelview.push();
 		renderer.modelview.top *= mat4.translation(20, window.height - 20, 0) * mat4.scaling(768,
 				512, 1);
-		text.text = "Lap "d ~ lap.to!dstring ~ " / 3"d;
+		text.text = "Lap "d ~ lap.to!dstring ~ " / "d ~ maxLaps.to!dstring;
 		text.draw(renderer);
 		renderer.modelview.pop();
 
@@ -236,5 +252,7 @@ private:
 	Texture[8] places;
 	ParticleSystem!(2048) particles;
 	SkyboxMesh skyboxMesh;
+	SceneManager sceneManager;
 	Text text;
+	ubyte maxLaps = 1;
 }

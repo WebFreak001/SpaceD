@@ -2,6 +2,7 @@ module components;
 
 import app;
 import particles;
+import scenemanager;
 
 import avocado.core;
 import avocado.sdl2;
@@ -105,6 +106,44 @@ struct Skybox
 {
 	Shader shader;
 	Texture texture;
+
+	mixin ComponentBase;
+}
+
+struct RaceInfo
+{
+	float time = -3;
+
+	mixin ComponentBase;
+}
+
+struct Button
+{
+	dstring text;
+	vec4 bg, fg;
+	vec4 rect;
+
+	mixin ComponentBase;
+}
+
+struct GUIText
+{
+	dstring text;
+	vec2 pos, scale;
+
+	mixin ComponentBase;
+}
+
+struct TabFocus
+{
+	uint index;
+
+	mixin ComponentBase;
+}
+
+struct SceneSwitchAction
+{
+	string scene;
 
 	mixin ComponentBase;
 }
