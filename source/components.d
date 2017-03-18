@@ -33,7 +33,8 @@ struct PlayerControls
 
 struct VehicleAI
 {
-	float reflectTime = 0;
+	vec2 nextWaypoint;
+	size_t trackIndex = 0;
 
 	mixin ComponentBase;
 }
@@ -75,6 +76,7 @@ struct TrackCollision
 {
 	vec2[] outerRing;
 	vec2[] innerRing;
+	float[] widths;
 
 	mixin ComponentBase;
 }

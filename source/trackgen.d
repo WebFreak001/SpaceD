@@ -9,6 +9,7 @@ import std.random;
 struct Track
 {
 	vec2[] outerRing, innerRing;
+	float[] widths;
 	Mesh roadMesh;
 	Mesh outerRingMesh, innerRingMesh;
 }
@@ -77,6 +78,7 @@ Track generateTrack()
 		// smooth width multipliers
 		foreach (i, ref mul; widthMuls)
 			mul = widthMuls.smooth(i, 8);
+		widths = widthMuls[].dup;
 		// generate mesh data
 		foreach (i, pos; trackPath)
 		{

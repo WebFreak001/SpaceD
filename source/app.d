@@ -132,7 +132,7 @@ void main()
 		mixin(createEntity!("Track", q{
 			EntityDisplay: track.roadMesh, shader, street, mat4.identity
 			Transformation: mat4.translation(0, 0, 0)
-			TrackCollision: track.outerRing, track.innerRing
+			TrackCollision: track.outerRing, track.innerRing, track.widths
 		}));
 		mixin(createEntity!("TrackL", q{
 			EntityDisplay: track.innerRingMesh, shader, border, mat4.identity

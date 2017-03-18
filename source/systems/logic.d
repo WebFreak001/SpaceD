@@ -2,6 +2,7 @@ module systems.logic;
 
 import avocado.core;
 import avocado.input;
+import avocado.sdl2;
 
 import app;
 import components;
@@ -72,6 +73,7 @@ public:
 					Transformation* transform;
 					VehiclePhysics* physics;
 					ParticleSpawner* particles;
+					VehicleAI* ai;
 					if (entity.fetch(transform, physics))
 					{
 						auto corners = physics.generateCornersAndExhaust;
@@ -87,7 +89,7 @@ public:
 								particles.time = 0;
 							}
 						}
-						bool shouldAccelerate;
+						float acceleration = 0;
 						bool shouldBoost;
 						bool shouldDecelerate;
 						float steering = 0;
@@ -95,7 +97,7 @@ public:
 						if (hasControls)
 						{
 							if (Keyboard.state.isKeyPressed(controls.accelerate))
-								shouldAccelerate = true;
+								acceleration = 1;
 							if (Keyboard.state.isKeyPressed(controls.boost))
 								shouldBoost = true;
 							if (Keyboard.state.isKeyPressed(controls.decelerate))
@@ -105,17 +107,34 @@ public:
 							if (Keyboard.state.isKeyPressed(controls.steerRight))
 								steering = 1;
 						}
-						else if (entity.has!VehicleAI)
+						else if (entity.fetch(ai))
 						{
-							shouldAccelerate = true;
-							steering = 1;
+							if (ai.nextWaypoint.isFinite)
+							{
+								if ((ai.nextWaypoint - physics.position).length_squared < 50 * 50)
+									ai.nextWaypoint = vec2(float.nan);
+								else
+								{
+									float s = sin(physics.rotation);
+									float c = cos(physics.rotation);
+									float f = (ai.nextWaypoint - physics.position).normalized.dot(vec2(c, s));
+									acceleration = 1.5f; // AI can cheat a bit, it's too easy otherwise
+									float strength = abs(f) < 0.2f ? 0.5f : 1.0f;
+									if (strength < 0.75f)
+										shouldBoost = true;
+									if (f < 0)
+										steering = -strength;
+									else
+										steering = strength;
+								}
+							}
 						}
 						physics.angularVelocity += world.delta * 3 * steering;
 
-						if (shouldAccelerate)
+						if (acceleration > 0)
 						{
 							physics.linearVelocity += vec2(sin(physics.rotation),
-									-cos(physics.rotation)) * world.delta * (shouldBoost ? 50 : 25);
+									-cos(physics.rotation)) * world.delta * (shouldBoost ? 50 : 25) * acceleration;
 							physics.reversing = false;
 
 							if (canParticle)
@@ -200,6 +219,12 @@ public:
 								TrackCollision* track;
 								if (other.fetch(track))
 								{
+									if (ai && !ai.nextWaypoint.isFinite)
+									{
+										ai.trackIndex = (ai.trackIndex + 2) % track.innerRing.length;
+										ai.nextWaypoint = (
+												track.innerRing[ai.trackIndex] * 3 + track.outerRing[ai.trackIndex]) * 0.25f;
+									}
 									foreach (i, a; track.innerRing)
 										checkRingCollision(a, track.innerRing[(i + 1) % $]);
 									foreach (i, b; track.outerRing)
@@ -212,9 +237,8 @@ public:
 									vec2 nrm = physics.position - otherCar.position;
 									nrm.normalize;
 									vec2 intersection;
-									for (int repeat = 0; repeat < 4
-											&& playerPlayerIntersects(corners[0 .. 4], otherCorners[0 .. 4], intersection);
-										repeat++)
+									for (int repeat = 0; repeat < 4 && playerPlayerIntersects(corners[0 .. 4],
+											otherCorners[0 .. 4], intersection); repeat++)
 									{
 										if (repeat == 0)
 										{
