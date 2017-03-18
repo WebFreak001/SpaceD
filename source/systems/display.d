@@ -254,5 +254,5 @@ private:
 	SkyboxMesh skyboxMesh;
 	SceneManager sceneManager;
 	Text text;
-	ubyte maxLaps = 1;
+	ubyte maxLaps = 3;
 }
