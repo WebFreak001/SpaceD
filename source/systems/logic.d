@@ -271,9 +271,14 @@ public:
 								physics.position.y) * mat4.yrotation(-physics.rotation);
 						if (hasControls)
 						{
-							renderer.modelview.top = mat4.xrotation(cradians!15) * mat4.translation(0,
-									0, -40) * mat4.yrotation(physics.cameraRotation) * mat4.translation(-physics.position.x,
-									-20, -physics.position.y);
+							if (Keyboard.state.isKeyPressed(controls.lookBack))
+								renderer.modelview.top = mat4.xrotation(cradians!15) * mat4.translation(0,
+										0, -40) * mat4.yrotation(physics.cameraRotation + PI) * mat4.translation(-physics.position.x,
+										-20, -physics.position.y);
+							else
+								renderer.modelview.top = mat4.xrotation(cradians!15) * mat4.translation(0,
+										0, -40) * mat4.yrotation(physics.cameraRotation) * mat4.translation(-physics.position.x,
+										-20, -physics.position.y);
 							float speedFov = physics.linearVelocity.length * 0.3f;
 							if (speedFov > 50)
 								speedFov = 50;
