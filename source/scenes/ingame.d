@@ -42,11 +42,13 @@ class IngameScene : IScene
 		Shader textShader = new Shader(renderer, textVert, textureFrag);
 		Font font = resources.load!Font("fonts/roboto.fnt", resources, "fonts/");
 
-		world.addSystem!LogicSystem(renderer, window);
-		world.addSystem!DisplaySystem(renderer, window, new ParticleSystem!(2048)(particleShader,
+		particles = new ParticleSystem!(2048)(particleShader,
 				[resources.load!Texture("textures/smoke.png"),
-				resources.load!Texture("textures/plasma.png")]), font, textShader,
-				resources, sceneManager);
+				resources.load!Texture("textures/plasma.png")]);
+
+		world.addSystem!LogicSystem(renderer, window);
+		world.addSystem!DisplaySystem(renderer, window, particles, font,
+				textShader, resources, sceneManager);
 
 		shader = new Shader();
 		shader.attach(defaultFrag);
@@ -98,6 +100,7 @@ class IngameScene : IScene
 
 	override void preEnter(IScene prev)
 	{
+		particles.clear();
 		string[] toDelete = [
 			"Track", "TrackL", "TrackR", "Start Pole Left", "Start Pole Right",
 			"Bot 1", "Player", "Bot 2", "Bot 3"
@@ -171,6 +174,7 @@ class IngameScene : IScene
 	{
 	}
 
+	ParticleSystem!(2048) particles;
 	Texture vehicle1, poleTex, street, border;
 	Mesh vehicleMesh, poleMesh;
 	Shader shader;
