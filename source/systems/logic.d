@@ -305,7 +305,7 @@ public:
 							if (speedFov > 50)
 								speedFov = 50;
 							renderer.projection.top = perspective(window.width, window.height,
-									30.0f + speedFov, 5.0f, 1000.0f);
+									30.0f + speedFov, 5.0f, 1500.0f);
 						}
 					}
 				}

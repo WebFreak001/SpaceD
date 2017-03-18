@@ -6,6 +6,8 @@ import avocado.dfs;
 import avocado.gl3;
 import avocado.sdl2;
 
+import std.random;
+
 import app;
 import components;
 import particles;
@@ -67,6 +69,16 @@ class IngameScene : IScene
 			mixin(createEntity!("Skybox", q{
 				Skybox: skyboxShader, skyTex
 			}));
+		}
+		{
+			auto meteoriteTex = resources.load!Texture("textures/meteorite_ao.png");
+			auto meteorite = resources.load!Scene("models/meteorite.obj")
+				.value.meshes[0].convertAssimpMesh;
+			for (int i = 0; i < 50; i++)
+				mixin(createEntity!("Meteorite", q{
+					EntityDisplay: meteorite, shader, meteoriteTex, mat4.scaling(10, 10, 10) * mat4.xrotation(uniform(0.0f, 3.1415926f * 2))
+					Transformation: mat4.translation(uniform(-1000.0f, 1000.0f), uniform(-70.0f, -20.0f), uniform(-1000.0f, 1000.0f))
+				}));
 		}
 
 		Texture street = resources.load!Texture("textures/street.png");
