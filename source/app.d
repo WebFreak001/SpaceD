@@ -7,10 +7,11 @@ import avocado.dfs;
 import avocado.gl3;
 import avocado.sdl2;
 
+import globstate;
 import scenemanager;
 import scenes.ingame;
-import scenes.mainmenu;
 import scenes.leaderboard;
+import scenes.mainmenu;
 import shaderpool;
 
 alias View = SDLWindow;
@@ -68,6 +69,8 @@ void main()
 
 		renderer.setupDepthTest(DepthFunc.Less);
 
+		globalState.load();
+
 		SceneManager sceneManager = new SceneManager(world);
 
 		ShaderPool shaders = new ShaderPool(resources);
@@ -75,6 +78,9 @@ void main()
 		auto ingame = new IngameScene();
 		ingame.load(sceneManager, renderer, window, resources, shaders);
 		sceneManager.register(ingame, "ingame");
+		auto shop = new ShopScene();
+		shop.load(sceneManager, renderer, window, resources, shaders);
+		sceneManager.register(shop, "shop");
 
 		auto leaderboards = new LeaderboardScene();
 		leaderboards.load(sceneManager, renderer, window, resources, shaders);

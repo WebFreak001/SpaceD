@@ -10,6 +10,7 @@ import std.conv;
 
 import app;
 import components;
+import globstate;
 import scenemanager;
 import scenes.ingame;
 import systems.menu;
@@ -38,7 +39,9 @@ class LeaderboardScene : IScene
 
 		for (int i = 0; i < 8; i++)
 			texts[i] = world.newEntity("Leaderboard Line " ~ i.to!string)
-				.add!GUIText(""d, vec2(200, 100 + i * 50), vec2(1, 1)).finalize();
+				.add!GUIText(""d, vec2(150, 50 + i * 50), vec2(1, 1)).finalize();
+		extraInfo = world.newEntity("Extra Info").add!GUIText(""d, vec2(150,
+				50 + 8 * 50), vec2(1, 1)).finalize();
 	}
 
 	override void preEnter(IScene prev)
@@ -49,17 +52,33 @@ class LeaderboardScene : IScene
 		{
 			auto game = cast(IngameScene) prev;
 			VehiclePhysics phys;
+			int playerRanking;
 			foreach (entity; game.world.entities)
 			{
 				if (entity.fetch(phys))
 				{
 					dstring name = "Bot"d;
 					if (entity.has!PlayerControls)
+					{
 						name = "Player"d;
+						playerRanking = phys.place;
+					}
 					texts[phys.place].get!GUIText.text = phys.place.to!dstring.placement ~ " "d ~ name;
 				}
 			}
-
+			int earnedMoney = 0;
+			if (playerRanking == 1)
+				earnedMoney = 100;
+			else if (playerRanking == 2)
+				earnedMoney = 50;
+			else if (playerRanking == 3)
+				earnedMoney = 25;
+			extraInfo.get!GUIText.text = "You have earned "d ~ earnedMoney.to!dstring ~ "ĸ in this Race"d;
+			if (earnedMoney)
+			{
+				globalState.money += earnedMoney;
+				globalState.save();
+			}
 		}
 	}
 
@@ -68,6 +87,7 @@ class LeaderboardScene : IScene
 	}
 
 	Entity[8] texts;
+	Entity extraInfo;
 }
 
 dstring placement(dstring s)

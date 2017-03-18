@@ -154,3 +154,10 @@ struct SceneSwitchAction
 
 	mixin ComponentBase;
 }
+
+struct BuyAction
+{
+	int upgradeIndex;
+
+	mixin ComponentBase;
+}

@@ -8,6 +8,7 @@ import avocado.input;
 
 import app;
 import text;
+import globstate;
 import components;
 import scenemanager;
 import particles;
@@ -74,6 +75,16 @@ public:
 							renderer.fillRectangle(button.rect, button.bg);
 						if (act)
 						{
+							BuyAction buyAction;
+							if (entity.fetch(buyAction))
+							{
+								int cost = globalState.upgradeCost(buyAction.upgradeIndex);
+								if (globalState.money >= cost)
+								{
+									globalState.binUpgrades[buyAction.upgradeIndex]++;
+									globalState.money -= cost;
+								}
+							}
 							SceneSwitchAction sceneAction;
 							if (entity.fetch(sceneAction))
 								sceneManager.setScene(sceneAction.scene);
@@ -82,7 +93,8 @@ public:
 						renderer.modelview.push();
 						renderer.modelview.top *= mat4.translation(
 								vec3(button.rect.x + (button.rect.z - text.textWidth * 768) * 0.5,
-								button.rect.y + text.lineHeight * 512 + (button.rect.a - text.lineHeight * 512) * 0.5, 0)) * mat4.scaling(768, 512, 1);
+								button.rect.y + text.lineHeight * 512 + (button.rect.a - text.lineHeight * 512) * 0.5,
+								0)) * mat4.scaling(768, 512, 1);
 						text.draw(renderer);
 						renderer.modelview.pop();
 					}

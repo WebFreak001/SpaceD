@@ -6,6 +6,7 @@ import avocado.sdl2;
 
 import app;
 import components;
+import globstate;
 import particles;
 
 private bool lineLineIntersects(vec2 l1a, vec2 l1b, vec2 l2a, vec2 l2b, ref vec2 intersection)
@@ -145,8 +146,13 @@ public:
 							physics.angularVelocity += world.delta * 3 * steering;
 							if (acceleration > 0)
 							{
+								int boost = 25;
+								if (hasControls)
+									boost += globalState.upgrades.boostLevel * 8;
+								if (!shouldBoost)
+									boost = 0;
 								physics.linearVelocity += vec2(sin(physics.rotation),
-										-cos(physics.rotation)) * world.delta * (shouldBoost ? 50 : 25) * acceleration;
+										-cos(physics.rotation)) * world.delta * (25 + boost) * acceleration;
 								physics.reversing = false;
 
 								if (canParticle)
@@ -189,8 +195,10 @@ public:
 								physics.angularVelocity = -1.5f;
 							if (physics.angularVelocity > 1.5f)
 								physics.angularVelocity = 1.5f;
-							physics.angularVelocity *= pow(0.4, world.delta);
-							physics.linearVelocity *= pow(0.8, world.delta);
+							physics.angularVelocity *= pow(0.4 / (1 + globalState.upgrades.betterControls * 0.05f),
+									world.delta);
+							physics.linearVelocity *= pow(0.8 / (1 + globalState.upgrades.betterControls * 0.2f),
+									world.delta);
 							physics.rotation += physics.angularVelocity * world.delta;
 							vec2 prevPosition = physics.position;
 							physics.position += physics.linearVelocity * world.delta;
@@ -201,7 +209,8 @@ public:
 								nrm.y = -nrm.y;
 								vec2 intersection;
 								bool ret;
-								if (obstruct && lineLineIntersects(a, b, prevPosition, physics.position, intersection))
+								if (obstruct && lineLineIntersects(a, b, prevPosition,
+										physics.position, intersection))
 								{
 									// went through wall
 									ret = true;

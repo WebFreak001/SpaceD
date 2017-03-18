@@ -8,3 +8,4 @@ __test__*__
 dub.selections.json
 /linuxjam
 *.blend1
+.savegame
