@@ -28,6 +28,31 @@ private bool lineLineIntersects(vec2 l1a, vec2 l1b, vec2 l2a, vec2 l2b, ref vec2
 	return true;
 }
 
+private bool playerPlayerIntersects(vec2[4] a, vec2[4] b)
+{
+	if ((a[0] - b[0]).length_squared > 10 * 10)
+		return false;
+	vec2 i;
+	//dfmt off
+	return lineLineIntersects(a[0], a[1], b[0], b[1], i)
+		|| lineLineIntersects(a[0], a[1], b[1], b[2], i)
+		|| lineLineIntersects(a[0], a[1], b[2], b[3], i)
+		|| lineLineIntersects(a[0], a[1], b[3], b[0], i)
+		|| lineLineIntersects(a[1], a[2], b[0], b[1], i)
+		|| lineLineIntersects(a[1], a[2], b[1], b[2], i)
+		|| lineLineIntersects(a[1], a[2], b[2], b[3], i)
+		|| lineLineIntersects(a[1], a[2], b[3], b[0], i)
+		|| lineLineIntersects(a[2], a[3], b[0], b[1], i)
+		|| lineLineIntersects(a[2], a[3], b[1], b[2], i)
+		|| lineLineIntersects(a[2], a[3], b[2], b[3], i)
+		|| lineLineIntersects(a[2], a[3], b[3], b[0], i)
+		|| lineLineIntersects(a[3], a[0], b[0], b[1], i)
+		|| lineLineIntersects(a[3], a[0], b[1], b[2], i)
+		|| lineLineIntersects(a[3], a[0], b[2], b[3], i)
+		|| lineLineIntersects(a[3], a[0], b[3], b[0], i);
+	//dfmt on
+}
+
 class LogicSystem : ISystem
 {
 public:
@@ -50,30 +75,7 @@ public:
 					ParticleSpawner* particles;
 					if (entity.fetch(transform, physics))
 					{
-						enum HalfFrontWidth = 1;
-						enum HalfWidth = 2;
-						enum HalfExhaustWidth = 1.5f;
-						enum HalfExhaustWidth2 = 1.1f;
-						enum HalfHeight = 3.8f;
-						auto s = sin(physics.rotation);
-						auto c = cos(physics.rotation);
-						vec2 tl = vec2(-HalfWidth * c - HalfHeight * s, -HalfWidth * s + HalfHeight * c)
-							+ physics.position;
-						vec2 tr = vec2(HalfWidth * c - HalfHeight * s, HalfWidth * s + HalfHeight * c)
-							+ physics.position;
-						vec2 bl = vec2(-HalfFrontWidth * c + HalfHeight * s, -HalfFrontWidth * s - HalfHeight
-								* c) + physics.position;
-						vec2 br = vec2(HalfFrontWidth * c + HalfHeight * s, HalfFrontWidth * s - HalfHeight * c)
-							+ physics.position;
-						vec2 exhaustL = vec2(-HalfExhaustWidth * c - HalfHeight * s,
-								-HalfExhaustWidth * s + HalfHeight * c) + physics.position;
-						vec2 exhaustR = vec2(HalfExhaustWidth * c - HalfHeight * s,
-								HalfExhaustWidth * s + HalfHeight * c) + physics.position;
-						vec2 exhaustL2 = vec2(-HalfExhaustWidth2 * c - HalfHeight * s,
-								-HalfExhaustWidth2 * s + HalfHeight * c) + physics.position;
-						vec2 exhaustR2 = vec2(HalfExhaustWidth2 * c - HalfHeight * s,
-								HalfExhaustWidth2 * s + HalfHeight * c) + physics.position;
-
+						auto corners = physics.generateCornersAndExhaust;
 						bool canParticle;
 						if (!entity.fetch(particles))
 							canParticle = false;
@@ -86,59 +88,73 @@ public:
 								particles.time = 0;
 							}
 						}
-						if (entity.fetch(controls))
+						bool shouldAccelerate;
+						bool shouldBoost;
+						bool shouldDecelerate;
+						float steering = 0;
+						bool hasControls = entity.fetch(controls);
+						if (hasControls)
 						{
 							if (Keyboard.state.isKeyPressed(controls.accelerate))
-							{
-								physics.linearVelocity += vec2(sin(physics.rotation),
-										-cos(physics.rotation)) * world.delta * (Keyboard.state.isKeyPressed(controls.boost)
-										? 50 : 25);
-								physics.reversing = false;
-
-								if (canParticle)
-								{
-									particles.toSpawn ~= ParticleSpawner.Data(vec3(exhaustL.x,
-											0.5f, exhaustL.y), 1, ParticleInfo(vec4(1, 1, 1, 1), 4,
-											-0.5f, vec3(physics.linearVelocity.x, 0,
-											physics.linearVelocity.y) * 0.25f, 0.5f));
-									particles.toSpawn ~= ParticleSpawner.Data(vec3(exhaustR.x,
-											0.5f, exhaustR.y), 1, ParticleInfo(vec4(1, 1, 1, 1), 4,
-											-0.5f, vec3(physics.linearVelocity.x, 0,
-											physics.linearVelocity.y) * 0.25f, 0.5f));
-									if (Keyboard.state.isKeyPressed(controls.boost))
-									{
-										particles.toSpawn ~= ParticleSpawner.Data(vec3(exhaustL2.x,
-												0.5f, exhaustL2.y), 1, ParticleInfo(vec4(1, 0.5f, 0.5f,
-												1), 4, -0.5f, vec3(physics.linearVelocity.x, 0,
-												physics.linearVelocity.y) * 0.5f, 0.5f));
-										particles.toSpawn ~= ParticleSpawner.Data(vec3(exhaustR2.x,
-												0.5f, exhaustR2.y), 1, ParticleInfo(vec4(1, 0.5f, 0.5f,
-												1), 4, -0.5f, vec3(physics.linearVelocity.x, 0,
-												physics.linearVelocity.y) * 0.5f, 0.5f));
-									}
-								}
-							}
+								shouldAccelerate = true;
+							if (Keyboard.state.isKeyPressed(controls.boost))
+								shouldBoost = true;
 							if (Keyboard.state.isKeyPressed(controls.decelerate))
-							{
-								if (physics.linearVelocity.length_squared >= 2 * 2 && !physics.reversing)
-									physics.linearVelocity *= pow(0.5, world.delta);
-								else
-								{
-									physics.reversing = true;
-									physics.linearVelocity -= vec2(sin(physics.rotation),
-											-cos(physics.rotation)) * world.delta * (Keyboard.state.isKeyPressed(controls.boost)
-											? 50 : 25);
-								}
-							}
+								shouldDecelerate = true;
 							if (Keyboard.state.isKeyPressed(controls.steerLeft))
-							{
-								physics.angularVelocity -= world.delta * 3;
-							}
+								steering = -1;
 							if (Keyboard.state.isKeyPressed(controls.steerRight))
+								steering = 1;
+						}
+						else if (entity.has!VehicleAI)
+						{
+							shouldAccelerate = true;
+							steering = 1;
+						}
+						physics.angularVelocity += world.delta * 3 * steering;
+
+						if (shouldAccelerate)
+						{
+							physics.linearVelocity += vec2(sin(physics.rotation),
+									-cos(physics.rotation)) * world.delta * (shouldBoost ? 50 : 25);
+							physics.reversing = false;
+
+							if (canParticle)
 							{
-								physics.angularVelocity += world.delta * 3;
+								particles.toSpawn ~= ParticleSpawner.Data(vec3(corners[4].x,
+										0.5f, corners[4].y), 1, ParticleInfo(vec4(1, 1, 1, 1), 4,
+										-0.5f, vec3(physics.linearVelocity.x, 0,
+										physics.linearVelocity.y) * 0.25f, 0.5f));
+								particles.toSpawn ~= ParticleSpawner.Data(vec3(corners[5].x,
+										0.5f, corners[5].y), 1, ParticleInfo(vec4(1, 1, 1, 1), 4,
+										-0.5f, vec3(physics.linearVelocity.x, 0,
+										physics.linearVelocity.y) * 0.25f, 0.5f));
+								if (shouldBoost)
+								{
+									particles.toSpawn ~= ParticleSpawner.Data(vec3(corners[6].x,
+											0.5f, corners[6].y), 1, ParticleInfo(vec4(1, 0.5f, 0.5f,
+											1), 4, -0.5f, vec3(physics.linearVelocity.x, 0,
+											physics.linearVelocity.y) * 0.5f, 0.5f));
+									particles.toSpawn ~= ParticleSpawner.Data(vec3(corners[7].x,
+											0.5f, corners[7].y), 1, ParticleInfo(vec4(1, 0.5f, 0.5f,
+											1), 4, -0.5f, vec3(physics.linearVelocity.x, 0,
+											physics.linearVelocity.y) * 0.5f, 0.5f));
+								}
 							}
 						}
+						if (shouldDecelerate)
+						{
+							if (physics.linearVelocity.length_squared >= 2 * 2 && !physics.reversing)
+								physics.linearVelocity *= pow(0.5, world.delta);
+							else
+							{
+								physics.reversing = true;
+								physics.linearVelocity -= vec2(sin(physics.rotation),
+										-cos(physics.rotation)) * world.delta * (Keyboard.state.isKeyPressed(controls.boost)
+										? 50 : 25);
+							}
+						}
+
 						if (physics.angularVelocity < -1.5f)
 							physics.angularVelocity = -1.5f;
 						if (physics.angularVelocity > 1.5f)
@@ -154,9 +170,10 @@ public:
 							nrm.y = -nrm.y;
 							vec2 intersection;
 							bool ret;
-							for (int repeat = 0; repeat < 10 && (lineLineIntersects(a, b, tl, tr, intersection)
-									|| lineLineIntersects(a, b, tr, br, intersection) || lineLineIntersects(a, b, br, bl,
-									intersection) || lineLineIntersects(a, b, bl, tl, intersection));
+							for (int repeat = 0; repeat < 10 && (lineLineIntersects(a, b, corners[0],
+									corners[1], intersection) || lineLineIntersects(a, b, corners[1], corners[3],
+									intersection) || lineLineIntersects(a, b, corners[3], corners[2],
+									intersection) || lineLineIntersects(a, b, corners[2], corners[0], intersection));
 									repeat++)
 							{
 								if (repeat == 0)
@@ -170,22 +187,16 @@ public:
 									physics.linearVelocity *= 0.95f;
 									physics.linearVelocity += nrm;
 								}
-								tl -= physics.position;
-								tr -= physics.position;
-								bl -= physics.position;
-								br -= physics.position;
+								corners[0 .. 4] -= physics.position;
 								physics.position += nrm * 0.05f;
-								tl += physics.position;
-								tr += physics.position;
-								bl += physics.position;
-								br += physics.position;
+								corners[0 .. 4] += physics.position;
 							}
 							return ret;
 						}
 
 						foreach (other; world.entities)
 						{
-							if (other.alive)
+							if (other.alive && other != entity)
 							{
 								TrackCollision* track;
 								if (other.fetch(track))
@@ -195,6 +206,27 @@ public:
 									foreach (i, b; track.outerRing)
 										checkRingCollision(track.outerRing[(i + 1) % $], b);
 								}
+								VehiclePhysics* otherCar;
+								if (other.fetch(otherCar))
+								{
+									auto otherCorners = otherCar.generateCornersAndExhaust;
+									vec2 nrm = physics.position - otherCar.position;
+									nrm.normalize;
+									for (int repeat = 0; repeat < 4
+											&& playerPlayerIntersects(corners[0 .. 4], otherCorners[0 .. 4]);
+										repeat++)
+									{
+										if (repeat == 0)
+										{
+											physics.linearVelocity *= 0.95f;
+											otherCar.linearVelocity *= 0.95f;
+											physics.linearVelocity += nrm;
+											otherCar.linearVelocity -= nrm;
+										}
+										physics.position += nrm * 0.025f;
+										otherCar.position -= nrm * 0.025f;
+									}
+								}
 							}
 						}
 
@@ -202,14 +234,17 @@ public:
 								world.delta) + physics.rotation;
 						transform.transform = mat4.translation(physics.position.x, 0,
 								physics.position.y) * mat4.yrotation(-physics.rotation);
-						renderer.modelview.top = mat4.xrotation(cradians!20) * mat4.translation(0,
-								0, -15) * mat4.yrotation(physics.cameraRotation) * mat4.translation(-physics.position.x,
-								-10, -physics.position.y);
-						float speedFov = physics.linearVelocity.length * 0.3f;
-						if (speedFov > 50)
-							speedFov = 50;
-						renderer.projection.top = perspective(window.width, window.height,
-								40.0f + speedFov, 5.0f, 1000.0f);
+						if (hasControls)
+						{
+							renderer.modelview.top = mat4.xrotation(cradians!20) * mat4.translation(0,
+									0, -15) * mat4.yrotation(physics.cameraRotation) * mat4.translation(-physics.position.x,
+									-10, -physics.position.y);
+							float speedFov = physics.linearVelocity.length * 0.3f;
+							if (speedFov > 50)
+								speedFov = 50;
+							renderer.projection.top = perspective(window.width, window.height,
+									40.0f + speedFov, 5.0f, 1000.0f);
+						}
 					}
 				}
 			}

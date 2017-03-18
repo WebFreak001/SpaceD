@@ -13,7 +13,7 @@ alias SkyboxMesh = GL3Mesh!(PositionElement, TexCoordElement);
 class DisplaySystem : ISystem
 {
 public:
-	this(Renderer renderer, View window, ParticleSystem!() particles, Font font, Shader textShader)
+	this(Renderer renderer, View window, ParticleSystem!(2048) particles, Font font, Shader textShader)
 	{
 		this.renderer = renderer;
 		this.window = window;
@@ -131,7 +131,8 @@ public:
 				}
 				{
 					VehiclePhysics phys;
-					if (entity.fetch(phys))
+					PlayerControls controls;
+					if (entity.fetch(phys, controls))
 						camRotation = phys.cameraRotation;
 				}
 				{
@@ -186,7 +187,7 @@ public:
 private:
 	Renderer renderer;
 	View window;
-	ParticleSystem!() particles;
+	ParticleSystem!(2048) particles;
 	SkyboxMesh skyboxMesh;
 	Text text;
 }

@@ -102,7 +102,7 @@ void main()
 		Font font = resources.load!Font("fonts/roboto.fnt", resources, "fonts/");
 
 		world.addSystem!LogicSystem(renderer, window);
-		world.addSystem!DisplaySystem(renderer, window, new ParticleSystem!()(particleShader,
+		world.addSystem!DisplaySystem(renderer, window, new ParticleSystem!(2048)(particleShader,
 				[resources.load!Texture("textures/smoke.png"),
 				resources.load!Texture("textures/plasma.png")]), font, textShader);
 
@@ -149,6 +149,13 @@ void main()
 				Transformation: mat4.translation(0, 0, 0)
 				PlayerControls: Key.Up, Key.Left, Key.Down, Key.Right, Key.RShift
 				VehiclePhysics: (track.innerRing[0] + track.outerRing[0]) * 0.5f
+				ParticleSpawner:
+			}));
+			mixin(createEntity!("Bot", q{
+				EntityDisplay: mesh, shader, vehicle1, mat4.identity
+				Transformation: mat4.translation(0, 0, 0)
+				VehiclePhysics: (track.innerRing[1] + track.outerRing[1]) * 0.5f
+				VehicleAI:
 				ParticleSpawner:
 			}));
 		}
