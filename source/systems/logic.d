@@ -111,7 +111,7 @@ public:
 						{
 							if (ai.nextWaypoint.isFinite)
 							{
-								if ((ai.nextWaypoint - physics.position).length_squared < 50 * 50)
+								if ((ai.nextWaypoint - physics.position).length_squared < 60 * 60)
 									ai.nextWaypoint = vec2(float.nan);
 								else
 								{
@@ -182,7 +182,7 @@ public:
 						physics.rotation += physics.angularVelocity * world.delta;
 						physics.position += physics.linearVelocity * world.delta;
 
-						bool checkRingCollision(vec2 a, vec2 b)
+						bool checkRingCollision(vec2 a, vec2 b, bool obstruct = true)
 						{
 							auto nrm = (a - b).yx.normalized;
 							nrm.y = -nrm.y;
@@ -194,9 +194,11 @@ public:
 									intersection) || lineLineIntersects(a, b, corners[2], corners[0], intersection));
 									repeat++)
 							{
+								ret = true;
+								if (!obstruct)
+									break;
 								if (repeat == 0)
 								{
-									ret = true;
 									if (canParticle)
 										particles.toSpawn ~= ParticleSpawner.Data(vec3(intersection.x,
 												0, intersection.y), 0, ParticleInfo(vec4(1, 1, 1, 1),
@@ -225,10 +227,14 @@ public:
 										ai.nextWaypoint = (
 												track.innerRing[ai.trackIndex] * 3 + track.outerRing[ai.trackIndex]) * 0.25f;
 									}
+									auto next = (physics.currentCheckpoint + 1) % track.innerRing.length;
 									foreach (i, a; track.innerRing)
 										checkRingCollision(a, track.innerRing[(i + 1) % $]);
 									foreach (i, b; track.outerRing)
 										checkRingCollision(track.outerRing[(i + 1) % $], b);
+									if (checkRingCollision(track.innerRing[next], track.outerRing[next], false))
+										physics.currentCheckpoint++;
+									physics.numCheckpoints = cast(int) track.innerRing.length;
 								}
 								VehiclePhysics* otherCar;
 								if (other.fetch(otherCar))
@@ -265,14 +271,14 @@ public:
 								physics.position.y) * mat4.yrotation(-physics.rotation);
 						if (hasControls)
 						{
-							renderer.modelview.top = mat4.xrotation(cradians!20) * mat4.translation(0,
-									0, -15) * mat4.yrotation(physics.cameraRotation) * mat4.translation(-physics.position.x,
-									-10, -physics.position.y);
+							renderer.modelview.top = mat4.xrotation(cradians!15) * mat4.translation(0,
+									0, -40) * mat4.yrotation(physics.cameraRotation) * mat4.translation(-physics.position.x,
+									-20, -physics.position.y);
 							float speedFov = physics.linearVelocity.length * 0.3f;
 							if (speedFov > 50)
 								speedFov = 50;
 							renderer.projection.top = perspective(window.width, window.height,
-									40.0f + speedFov, 5.0f, 1000.0f);
+									30.0f + speedFov, 5.0f, 1000.0f);
 						}
 					}
 				}

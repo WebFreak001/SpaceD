@@ -47,6 +47,11 @@ struct VehiclePhysics
 	float angularVelocity = 0;
 	float cameraRotation = 0;
 	bool reversing = false;
+	int currentCheckpoint = 0;
+	int numCheckpoints = 0;
+	ubyte place = 0;
+	int lastCheck = -1;
+	bool player = false;
 
 	mixin ComponentBase;
 

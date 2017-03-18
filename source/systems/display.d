@@ -8,12 +8,15 @@ import text;
 import components;
 import particles;
 
+import std.algorithm;
+
 alias SkyboxMesh = GL3Mesh!(PositionElement, TexCoordElement);
 
 class DisplaySystem : ISystem
 {
 public:
-	this(Renderer renderer, View window, ParticleSystem!(2048) particles, Font font, Shader textShader)
+	this(Renderer renderer, View window, ParticleSystem!(2048) particles,
+			Font font, Shader textShader)
 	{
 		this.renderer = renderer;
 		this.window = window;
@@ -112,6 +115,8 @@ public:
 		renderer.clear();
 		particles.update(world.delta);
 		float camRotation;
+		VehiclePhysics*[] allPlayers;
+		ubyte lap = 0;
 		foreach (entity; world.entities)
 		{
 			if (entity.alive)
@@ -130,10 +135,17 @@ public:
 					}
 				}
 				{
-					VehiclePhysics phys;
-					PlayerControls controls;
-					if (entity.fetch(phys, controls))
-						camRotation = phys.cameraRotation;
+					VehiclePhysics* phys;
+					if (entity.fetch(phys))
+					{
+						if (entity.has!PlayerControls)
+						{
+							camRotation = phys.cameraRotation;
+							lap = cast(ubyte)(phys.currentCheckpoint / phys.numCheckpoints + 1);
+							phys.player = true;
+						}
+						allPlayers ~= phys;
+					}
 				}
 				{
 					ParticleSpawner* spawner;
@@ -170,13 +182,37 @@ public:
 		renderer.modelview.push();
 		renderer.modelview = mat4.identity;
 		renderer.modelview.push();
-		renderer.modelview.top *= mat4.translation(20, window.height - 20, 0) * mat4.scaling(768 * 0.5f, 512 * 0.5f, 1);
-		text.text = "Lap 1 / 3"d;
+		renderer.modelview.top *= mat4.translation(20, window.height - 20,
+				0) * mat4.scaling(768, 512, 1);
+		text.text = "Lap "d ~ lap.to!dstring ~ " / 3"d;
 		text.draw(renderer);
 		renderer.modelview.pop();
 		renderer.modelview.push();
-		text.text = "1 / 8"d;
-		renderer.modelview.top *= mat4.translation(window.width - text.textWidth * 768 - 20, window.height - 20, 0) * mat4.scaling(768, 512, 1);
+		int place = 0;
+		foreach (ref player; allPlayers)
+		{
+			if (player.lastCheck != player.currentCheckpoint)
+			{
+				ubyte tmpPlace = 0;
+				foreach (a; allPlayers.sort!"a.currentCheckpoint == b.currentCheckpoint ?
+					a.place < b.place :
+					a.currentCheckpoint > b.currentCheckpoint")
+				{
+					a.place = ++tmpPlace;
+					a.lastCheck = a.currentCheckpoint;
+				}
+				break;
+			}
+		}
+		foreach (ref p; allPlayers)
+			if (p.player)
+			{
+				place = p.place;
+				break;
+			}
+		text.text = place.to!dstring ~ " / 4"d;
+		renderer.modelview.top *= mat4.translation(window.width - text.textWidth * 768 * 2 - 20,
+				window.height - 20, 0) * mat4.scaling(768 * 2, 512 * 2, 1);
 		text.draw(renderer);
 		renderer.modelview.pop();
 		renderer.modelview.pop();
