@@ -48,7 +48,7 @@ public:
 					Transformation* transform;
 					VehiclePhysics* physics;
 					ParticleSpawner* particles;
-					if (entity.fetch(transform, controls, physics, particles))
+					if (entity.fetch(transform, physics))
 					{
 						enum HalfFrontWidth = 1;
 						enum HalfWidth = 2;
@@ -74,69 +74,114 @@ public:
 						vec2 exhaustR2 = vec2(HalfExhaustWidth2 * c - HalfHeight * s,
 								HalfExhaustWidth2 * s + HalfHeight * c) + physics.position;
 
-						particles.time += world.delta;
 						bool canParticle;
-						if (particles.time >= 0.005f)
+						if (!entity.fetch(particles))
+							canParticle = false;
+						else
 						{
-							canParticle = true;
-							particles.time = 0;
-						}
-						if (Keyboard.state.isKeyPressed(controls.accelerate))
-						{
-							physics.linearVelocity += vec2(sin(physics.rotation),
-									-cos(physics.rotation)) * world.delta * (Keyboard.state.isKeyPressed(controls.boost)
-									? 100 : 50);
-							physics.reversing = false;
-
-							if (canParticle)
+							particles.time += world.delta;
+							if (particles.time >= 0.005f)
 							{
-								particles.toSpawn ~= ParticleSpawner.Data(vec3(exhaustL.x, 0.5f,
-										exhaustL.y), 1, ParticleInfo(vec4(1, 1, 1, 1), 4, -0.5f,
-										vec3(physics.linearVelocity.x, 0, physics.linearVelocity.y) * 0.25f, 0.5f));
-								particles.toSpawn ~= ParticleSpawner.Data(vec3(exhaustR.x, 0.5f,
-										exhaustR.y), 1, ParticleInfo(vec4(1, 1, 1, 1), 4, -0.5f,
-										vec3(physics.linearVelocity.x, 0, physics.linearVelocity.y) * 0.25f, 0.5f));
-								if (Keyboard.state.isKeyPressed(controls.boost))
+								canParticle = true;
+								particles.time = 0;
+							}
+						}
+						if (entity.fetch(controls))
+						{
+							if (Keyboard.state.isKeyPressed(controls.accelerate))
+							{
+								physics.linearVelocity += vec2(sin(physics.rotation),
+										-cos(physics.rotation)) * world.delta * (Keyboard.state.isKeyPressed(controls.boost)
+										? 50 : 25);
+								physics.reversing = false;
+
+								if (canParticle)
 								{
-									particles.toSpawn ~= ParticleSpawner.Data(vec3(exhaustL2.x,
-											0.5f, exhaustL2.y), 1, ParticleInfo(vec4(1, 0.5f, 0.5f,
-											1), 4, -0.5f, vec3(physics.linearVelocity.x, 0,
-											physics.linearVelocity.y) * 0.5f, 0.5f));
-									particles.toSpawn ~= ParticleSpawner.Data(vec3(exhaustR2.x,
-											0.5f, exhaustR2.y), 1, ParticleInfo(vec4(1, 0.5f, 0.5f,
-											1), 4, -0.5f, vec3(physics.linearVelocity.x, 0,
-											physics.linearVelocity.y) * 0.5f, 0.5f));
+									particles.toSpawn ~= ParticleSpawner.Data(vec3(exhaustL.x,
+											0.5f, exhaustL.y), 1, ParticleInfo(vec4(1, 1, 1, 1), 4,
+											-0.5f, vec3(physics.linearVelocity.x, 0,
+											physics.linearVelocity.y) * 0.25f, 0.5f));
+									particles.toSpawn ~= ParticleSpawner.Data(vec3(exhaustR.x,
+											0.5f, exhaustR.y), 1, ParticleInfo(vec4(1, 1, 1, 1), 4,
+											-0.5f, vec3(physics.linearVelocity.x, 0,
+											physics.linearVelocity.y) * 0.25f, 0.5f));
+									if (Keyboard.state.isKeyPressed(controls.boost))
+									{
+										particles.toSpawn ~= ParticleSpawner.Data(vec3(exhaustL2.x,
+												0.5f, exhaustL2.y), 1, ParticleInfo(vec4(1, 0.5f, 0.5f,
+												1), 4, -0.5f, vec3(physics.linearVelocity.x, 0,
+												physics.linearVelocity.y) * 0.5f, 0.5f));
+										particles.toSpawn ~= ParticleSpawner.Data(vec3(exhaustR2.x,
+												0.5f, exhaustR2.y), 1, ParticleInfo(vec4(1, 0.5f, 0.5f,
+												1), 4, -0.5f, vec3(physics.linearVelocity.x, 0,
+												physics.linearVelocity.y) * 0.5f, 0.5f));
+									}
 								}
 							}
-						}
-						if (Keyboard.state.isKeyPressed(controls.decelerate))
-						{
-							if (physics.linearVelocity.length_squared >= 2 * 2 && !physics.reversing)
-								physics.linearVelocity *= pow(0.5, world.delta);
-							else
+							if (Keyboard.state.isKeyPressed(controls.decelerate))
 							{
-								physics.reversing = true;
-								physics.linearVelocity -= vec2(sin(physics.rotation),
-										-cos(physics.rotation)) * world.delta * (Keyboard.state.isKeyPressed(controls.boost)
-										? 100 : 50);
+								if (physics.linearVelocity.length_squared >= 2 * 2 && !physics.reversing)
+									physics.linearVelocity *= pow(0.5, world.delta);
+								else
+								{
+									physics.reversing = true;
+									physics.linearVelocity -= vec2(sin(physics.rotation),
+											-cos(physics.rotation)) * world.delta * (Keyboard.state.isKeyPressed(controls.boost)
+											? 50 : 25);
+								}
 							}
-						}
-						if (Keyboard.state.isKeyPressed(controls.steerLeft))
-						{
-							physics.angularVelocity -= world.delta;
-						}
-						if (Keyboard.state.isKeyPressed(controls.steerRight))
-						{
-							physics.angularVelocity += world.delta;
+							if (Keyboard.state.isKeyPressed(controls.steerLeft))
+							{
+								physics.angularVelocity -= world.delta * 3;
+							}
+							if (Keyboard.state.isKeyPressed(controls.steerRight))
+							{
+								physics.angularVelocity += world.delta * 3;
+							}
 						}
 						if (physics.angularVelocity < -1.5f)
 							physics.angularVelocity = -1.5f;
 						if (physics.angularVelocity > 1.5f)
 							physics.angularVelocity = 1.5f;
 						physics.angularVelocity *= pow(0.4, world.delta);
-						physics.linearVelocity *= pow(0.5, world.delta);
+						physics.linearVelocity *= pow(0.8, world.delta);
 						physics.rotation += physics.angularVelocity * world.delta;
 						physics.position += physics.linearVelocity * world.delta;
+
+						bool checkRingCollision(vec2 a, vec2 b)
+						{
+							auto nrm = (a - b).yx.normalized;
+							nrm.y = -nrm.y;
+							vec2 intersection;
+							bool ret;
+							for (int repeat = 0; repeat < 10 && (lineLineIntersects(a, b, tl, tr, intersection)
+									|| lineLineIntersects(a, b, tr, br, intersection) || lineLineIntersects(a, b, br, bl,
+									intersection) || lineLineIntersects(a, b, bl, tl, intersection));
+									repeat++)
+							{
+								if (repeat == 0)
+								{
+									ret = true;
+									if (canParticle)
+										particles.toSpawn ~= ParticleSpawner.Data(vec3(intersection.x,
+												0, intersection.y), 0, ParticleInfo(vec4(1, 1, 1, 1),
+												4, 0, vec3(physics.linearVelocity.x * 0.03f, 10,
+												physics.linearVelocity.y * 0.03f), 0.8f));
+									physics.linearVelocity *= 0.95f;
+									physics.linearVelocity += nrm;
+								}
+								tl -= physics.position;
+								tr -= physics.position;
+								bl -= physics.position;
+								br -= physics.position;
+								physics.position += nrm * 0.05f;
+								tl += physics.position;
+								tr += physics.position;
+								bl += physics.position;
+								br += physics.position;
+							}
+							return ret;
+						}
 
 						foreach (other; world.entities)
 						{
@@ -146,69 +191,9 @@ public:
 								if (other.fetch(track))
 								{
 									foreach (i, a; track.innerRing)
-									{
-										auto b = track.innerRing[(i + 1) % $];
-										auto nrm = (a - b).yx.normalized;
-										nrm.y = -nrm.y;
-										vec2 intersection;
-										for (int repeat = 0; repeat < 10 && (lineLineIntersects(a, b, tl, tr, intersection)
-												|| lineLineIntersects(a, b, tr, br, intersection) || lineLineIntersects(a, b, br, bl,
-												intersection) || lineLineIntersects(a, b, bl, tl, intersection));
-												repeat++)
-										{
-											if (repeat == 0)
-											{
-												if (canParticle)
-													particles.toSpawn ~= ParticleSpawner.Data(vec3(intersection.x,
-															0, intersection.y), 0, ParticleInfo(vec4(1, 1, 1, 1),
-															4, 0, vec3(physics.linearVelocity.x, 10,
-															physics.linearVelocity.y), 0.8f));
-												physics.linearVelocity *= 0.95f;
-												physics.linearVelocity += nrm;
-											}
-											tl -= physics.position;
-											tr -= physics.position;
-											bl -= physics.position;
-											br -= physics.position;
-											physics.position += nrm * 0.05f;
-											tl += physics.position;
-											tr += physics.position;
-											bl += physics.position;
-											br += physics.position;
-										}
-									}
+										checkRingCollision(a, track.innerRing[(i + 1) % $]);
 									foreach (i, b; track.outerRing)
-									{
-										auto a = track.outerRing[(i + 1) % $];
-										auto nrm = (a - b).yx.normalized;
-										nrm.y = -nrm.y;
-										vec2 intersection;
-										for (int repeat = 0; repeat < 10 && (lineLineIntersects(a, b, tl, tr, intersection)
-												|| lineLineIntersects(a, b, tr, br, intersection) || lineLineIntersects(a, b, br, bl,
-												intersection) || lineLineIntersects(a, b, bl, tl, intersection));
-												repeat++)
-										{
-											if (repeat == 0)
-											{
-												if (canParticle)
-													particles.toSpawn ~= ParticleSpawner.Data(vec3(intersection.x,
-															0, intersection.y), 0, ParticleInfo(vec4(1, 1, 1, 1),
-															4, -1, vec3(physics.linearVelocity.x, 10,
-															physics.linearVelocity.y), 0.5f));
-												physics.linearVelocity *= 0.95f;
-												physics.linearVelocity += nrm;
-											}
-											tl -= physics.position;
-											tr -= physics.position;
-											bl -= physics.position;
-											br -= physics.position;
-											physics.position += nrm * 0.05f;
-											tl += physics.position;
-											tr += physics.position;
-											bl += physics.position;
-											br += physics.position;
-										}
-									}
+										checkRingCollision(track.outerRing[(i + 1) % $], b);
 								}
 							}
 						}

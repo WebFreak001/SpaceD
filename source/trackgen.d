@@ -23,7 +23,7 @@ T smooth(T, size_t l)(T[l] arr, size_t i, int n)
 
 Track generateTrack()
 {
-	enum RoadWidth = 30;
+	enum RoadWidth = 50;
 	enum Scale = 400;
 
 	vec2[96] trackPath;
