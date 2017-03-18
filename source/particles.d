@@ -79,6 +79,12 @@ public:
 		renderer.drawMeshInstanced(particles, ParticlesMax);
 	}
 
+	void clear()
+	{
+		particlePositions[] = vec3(0);
+		particleColors[] = vec4(0);
+	}
+
 	Texture[] textures;
 private:
 	ParticleStream particles;

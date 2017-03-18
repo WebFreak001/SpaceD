@@ -6,6 +6,7 @@ import avocado.dfs;
 import avocado.gl3;
 import avocado.sdl2;
 
+import std.algorithm;
 import std.random;
 
 import app;
@@ -47,7 +48,7 @@ class IngameScene : IScene
 				resources.load!Texture("textures/plasma.png")]), font, textShader,
 				resources, sceneManager);
 
-		auto shader = new Shader();
+		shader = new Shader();
 		shader.attach(defaultFrag);
 		shader.attach(defaultVert);
 		shader.create(renderer);
@@ -81,17 +82,37 @@ class IngameScene : IScene
 				}));
 		}
 
-		Texture street = resources.load!Texture("textures/street.png");
+		street = resources.load!Texture("textures/street.png");
 		street.wrapX = TextureClampMode.ClampToEdge;
 		street.wrapY = TextureClampMode.ClampToEdge;
 		street.applyParameters();
-		Texture border = resources.load!Texture("textures/border.png");
+		border = resources.load!Texture("textures/border.png");
 		border.wrapX = TextureClampMode.Mirror;
 		border.wrapY = TextureClampMode.Mirror;
 		border.applyParameters();
-		Texture poleTex = resources.load!Texture("textures/pole.png");
-		auto poleMesh = resources.load!Scene("models/pole.obj").value.meshes[0].convertAssimpMesh;
-		auto vehicle1 = resources.load!Texture("textures/vehicle1.png");
+		poleTex = resources.load!Texture("textures/pole.png");
+		poleMesh = resources.load!Scene("models/pole.obj").value.meshes[0].convertAssimpMesh;
+		vehicle1 = resources.load!Texture("textures/vehicle1.png");
+		vehicleMesh = resources.load!Scene("models/vehicle1.obj").value.meshes[0].convertAssimpMesh;
+	}
+
+	override void preEnter(IScene prev)
+	{
+		string[] toDelete = [
+			"Track", "TrackL", "TrackR", "Start Pole Left", "Start Pole Right",
+			"Bot 1", "Player", "Bot 2", "Bot 3"
+		];
+		foreach_reverse (i, entity; world.entities)
+		{
+			if (toDelete.canFind(entity.name))
+				world.entities = world.entities.remove(i);
+			else
+			{
+				RaceInfo* info;
+				if (entity.fetch(info))
+					info.time = -3;
+			}
+		}
 		auto track = generateTrack;
 		mixin(createEntity!("Track", q{
 			EntityDisplay: track.roadMesh, shader, street, mat4.identity
@@ -115,30 +136,29 @@ class IngameScene : IScene
 			Transformation: mat4.translation(track.outerRing[0].x, 5, track.outerRing[0].y)
 		}));
 		{
-			auto mesh = resources.load!Scene("models/vehicle1.obj").value.meshes[0].convertAssimpMesh;
 			mixin(createEntity!("Bot 1", q{
-				EntityDisplay: mesh, shader, vehicle1, mat4.identity
+				EntityDisplay: vehicleMesh, shader, vehicle1, mat4.identity
 				Transformation: mat4.translation(0, 0, 0)
 				VehiclePhysics: track.innerRing[$ - 1] * 0.2f + track.outerRing[$ - 1] * 0.8f, PI * 0.5f
 				VehicleAI:
 				ParticleSpawner:
 			}));
 			mixin(createEntity!("Player", q{
-				EntityDisplay: mesh, shader, vehicle1, mat4.identity
+				EntityDisplay: vehicleMesh, shader, vehicle1, mat4.identity
 				Transformation: mat4.translation(0, 0, 0)
 				PlayerControls: Key.Up, Key.Left, Key.Down, Key.Right, Key.RShift, Key.RCtrl
 				VehiclePhysics: track.innerRing[0] * 0.4f + track.outerRing[0] * 0.6f, PI * 0.5f
 				ParticleSpawner:
 			}));
-			mixin(createEntity!("Bot 1", q{
-				EntityDisplay: mesh, shader, vehicle1, mat4.identity
+			mixin(createEntity!("Bot 2", q{
+				EntityDisplay: vehicleMesh, shader, vehicle1, mat4.identity
 				Transformation: mat4.translation(0, 0, 0)
 				VehiclePhysics: track.innerRing[$ - 1] * 0.6f + track.outerRing[$ - 1] * 0.4f, PI * 0.5f
 				VehicleAI:
 				ParticleSpawner:
 			}));
-			mixin(createEntity!("Bot 1", q{
-				EntityDisplay: mesh, shader, vehicle1, mat4.identity
+			mixin(createEntity!("Bot 3", q{
+				EntityDisplay: vehicleMesh, shader, vehicle1, mat4.identity
 				Transformation: mat4.translation(0, 0, 0)
 				VehiclePhysics: track.innerRing[0] * 0.8f + track.outerRing[0] * 0.2f, PI * 0.5f
 				VehicleAI:
@@ -147,32 +167,11 @@ class IngameScene : IScene
 		}
 	}
 
-	override void preEnter(IScene prev)
-	{
-		foreach (entity; world.entities)
-		{
-			RaceInfo* info;
-			if (entity.fetch(info))
-				info.time = -3;
-			VehiclePhysics* vehicle;
-			if (entity.fetch(vehicle))
-			{
-				vec2 pos = vehicle.startPosition;
-				float rot = PI * 0.5f;
-				*vehicle = VehiclePhysics.init;
-				vehicle.position = vehicle.startPosition = pos;
-				vehicle.rotation = rot;
-			}
-			VehicleAI* ai;
-			if (entity.fetch(ai))
-			{
-				ai.nextWaypoint = vec2(float.nan);
-				ai.trackIndex = 0;
-			}
-		}
-	}
-
 	override void postExit(IScene next)
 	{
 	}
+
+	Texture vehicle1, poleTex, street, border;
+	Mesh vehicleMesh, poleMesh;
+	Shader shader;
 }
