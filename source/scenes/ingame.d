@@ -29,6 +29,7 @@ class IngameScene : IScene
 		auto particleFrag = shaders.load(ShaderType.Fragment, "shaders/particle.frag");
 		auto particleVert = shaders.load(ShaderType.Vertex, "shaders/particle.vert");
 		auto textVert = shaders.load(ShaderType.Vertex, "shaders/text.vert");
+		auto textFrag = shaders.load(ShaderType.Fragment, "shaders/text.frag");
 		auto textureFrag = shaders.load(ShaderType.Fragment, "shaders/texture.frag");
 
 		auto particleShader = new Shader();
@@ -39,7 +40,7 @@ class IngameScene : IScene
 		particleShader.set("tex0", 0);
 		particleShader.set("tex1", 1);
 
-		Shader textShader = new Shader(renderer, textVert, textureFrag);
+		Shader textShader = new Shader(renderer, textVert, textFrag);
 		Font font = resources.load!Font("fonts/roboto.fnt", resources, "fonts/");
 
 		particles = new ParticleSystem!(8192)(particleShader,

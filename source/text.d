@@ -57,11 +57,12 @@ public:
 		return _textStr;
 	}
 
-	void draw(Renderer renderer)
+	void draw(Renderer renderer, vec4 color = vec4(1))
 	{
 		_text.fillChar(_chars);
 		_text.fillCharPosition(_positions);
 		renderer.bind(_shader);
+		_shader.set("color", color);
 		foreach (slot, tex; _font.pages)
 			renderer.bind(tex, cast(int) slot);
 		renderer.drawMeshInstanced(_text, cast(int) _chars.length);

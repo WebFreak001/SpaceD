@@ -1,11 +1,11 @@
 module components;
 
+import avocado.core;
+import avocado.sdl2;
+
 import app;
 import particles;
 import scenemanager;
-
-import avocado.core;
-import avocado.sdl2;
 
 struct Transformation
 {
@@ -124,19 +124,67 @@ struct RaceInfo
 	mixin ComponentBase;
 }
 
+enum Align : ubyte
+{
+	TopLeft,
+	BottomLeft,
+	TopRight,
+	BottomRight
+}
+
 struct Button
 {
 	dstring text;
 	vec4 bg, fg;
 	vec4 rect;
+	Align alignment;
 
 	mixin ComponentBase;
+}
+
+struct GUIRectangle
+{
+	Texture texture;
+	vec4 rect;
+	Align alignment;
+
+	mixin ComponentBase;
+}
+
+struct GUIColorRectangle
+{
+	vec4 color;
+	vec4 rect;
+	Align alignment;
+
+	mixin ComponentBase;
+}
+
+enum TextAlign : ubyte
+{
+	Left,
+	Center,
+	Right
 }
 
 struct GUIText
 {
 	dstring text;
 	vec2 pos, scale;
+	vec4 fg = vec4(1);
+	Align alignment;
+	TextAlign textAlign;
+
+	mixin ComponentBase;
+}
+
+struct GUI3D
+{
+	mat4 projection, modelview;
+	Mesh mesh;
+	Shader shader;
+	Texture texture;
+	float time = 0;
 
 	mixin ComponentBase;
 }

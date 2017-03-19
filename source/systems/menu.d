@@ -17,6 +17,21 @@ import std.algorithm;
 import std.conv;
 import std.stdio;
 
+vec4 compute(vec4 rect, Align alignment, float width, float height)
+{
+	final switch (alignment) with (Align)
+	{
+	case TopLeft:
+		return rect;
+	case BottomLeft:
+		return vec4(rect.x, height - rect.a - rect.y, rect.zw);
+	case TopRight:
+		return vec4(width - rect.z - rect.x, rect.y, rect.zw);
+	case BottomRight:
+		return vec4(width - rect.z - rect.x, height - rect.a - rect.y, rect.zw);
+	}
+}
+
 class MenuSystem : ISystem
 {
 public:
@@ -26,12 +41,40 @@ public:
 		this.window = window;
 		this.sceneManager = sceneManager;
 		text = new Text(font, textShader);
+
+		buttonShape = new GL3ShapePosition();
+		buttonShape.addPositionArray([vec2(0.05f, 0), vec2(1, 0), vec2(0.95f, 1),
+				vec2(0.95f, 1), vec2(0.05f, 0), vec2(0, 1)]);
+		buttonShape.generate();
 	}
 
 	final void update(World world)
 	{
 		renderer.begin(window);
+		renderer.clearColor = vec4(0.149f, 0.196f, 0.220f, 1.0f);
 		renderer.clear();
+
+		foreach (entity; world.entities)
+		{
+			if (entity.alive)
+			{
+				GUI3D* g3d;
+				if (entity.fetch(g3d))
+				{
+					g3d.time += world.delta;
+					renderer.modelview.push();
+					renderer.projection.push();
+					renderer.projection = g3d.projection;
+					renderer.modelview = g3d.modelview * mat4.yrotation(g3d.time * 0.1f);
+					renderer.bind(g3d.shader);
+					renderer.bind(g3d.texture);
+					renderer.drawMesh(g3d.mesh);
+					renderer.projection.pop();
+					renderer.modelview.pop();
+				}
+			}
+		}
+
 		renderer.bind2D();
 		renderer.modelview.push();
 		renderer.modelview = mat4.identity;
@@ -48,11 +91,12 @@ public:
 					{
 						bool focused;
 						bool act;
-						if (Mouse.state.x > button.rect.x
-								&& Mouse.state.x <= button.rect.x + button.rect.z
-								&& Mouse.state.y > button.rect.y && Mouse.state.y <= button.rect.y + button.rect.a)
+						vec4 rect = compute(button.rect, button.alignment, window.width, window.height);
+						if (Mouse.state.x > rect.x && Mouse.state.x <= rect.x + rect.z
+								&& Mouse.state.y > rect.y && Mouse.state.y <= rect.y + rect.a)
 						{
 							focused = true;
+							curTabIndex = -1;
 							if (!Mouse.state.isButtonPressed(1) && prevMouse.isButtonPressed(1))
 								act = true;
 						}
@@ -69,10 +113,14 @@ public:
 									act = true;
 							}
 						}
+						renderer.modelview.push();
+						renderer.modelview.top *= mat4.translation(vec3(rect.xy,
+								0)) * mat4.scaling(rect.z, rect.w, 1);
 						if (focused)
-							renderer.fillRectangle(button.rect, (button.bg + vec4(0, 0, 1, 1)) * 0.5f);
+							renderer.fillShape(buttonShape, vec2(0), (button.bg + vec4(0.5f, 0.5f, 1, 1)) * 0.5f);
 						else
-							renderer.fillRectangle(button.rect, button.bg);
+							renderer.fillShape(buttonShape, vec2(0), button.bg);
+						renderer.modelview.pop();
 						if (act)
 						{
 							BuyAction buyAction;
@@ -91,12 +139,27 @@ public:
 						}
 						text.text = button.text;
 						renderer.modelview.push();
-						renderer.modelview.top *= mat4.translation(
-								vec3(button.rect.x + (button.rect.z - text.textWidth * 768) * 0.5,
-								button.rect.y + text.lineHeight * 512 + (button.rect.a - text.lineHeight * 512) * 0.5,
-								0)) * mat4.scaling(768, 512, 1);
-						text.draw(renderer);
+						renderer.modelview.top *= mat4.translation(vec3(rect.x + (rect.z - text.textWidth * 768) * 0.5,
+								rect.y + text.lineHeight * 512 + (rect.a - text.lineHeight * 512) * 0.5, 0)) * mat4.scaling(768,
+								512, 1);
+						text.draw(renderer, button.fg);
 						renderer.modelview.pop();
+					}
+				}
+				{
+					GUIRectangle* rectangle;
+					if (entity.fetch(rectangle))
+					{
+						auto rect = compute(rectangle.rect, rectangle.alignment, window.width, window.height);
+						renderer.drawRectangle(rectangle.texture, rect);
+					}
+				}
+				{
+					GUIColorRectangle* rectangle;
+					if (entity.fetch(rectangle))
+					{
+						auto rect = compute(rectangle.rect, rectangle.alignment, window.width, window.height);
+						renderer.fillRectangle(rect, rectangle.color);
 					}
 				}
 				{
@@ -104,10 +167,16 @@ public:
 					if (entity.fetch(guitext))
 					{
 						text.text = guitext.text;
+						vec4 baseRect = vec4(guitext.pos.xy, text.textWidth * 768 * guitext.scale.x, 0);
+						if (guitext.textAlign == TextAlign.Right)
+							baseRect.x -= baseRect.z;
+						else if (guitext.textAlign == TextAlign.Center)
+							baseRect.x -= baseRect.z * 0.5f;
+						vec4 rect = compute(baseRect, guitext.alignment, window.width, window.height);
 						renderer.modelview.push();
-						renderer.modelview.top *= mat4.translation(vec3(guitext.pos.x,
-								guitext.pos.y, 0)) * mat4.scaling(768 * guitext.scale.x, 512 * guitext.scale.y, 1);
-						text.draw(renderer);
+						renderer.modelview.top *= mat4.translation(vec3(rect.x, rect.y,
+								0)) * mat4.scaling(768 * guitext.scale.x, 512 * guitext.scale.y, 1);
+						text.draw(renderer, guitext.fg);
 						renderer.modelview.pop();
 					}
 				}
@@ -134,7 +203,8 @@ private:
 	Renderer renderer;
 	View window;
 	Text text;
-	int curTabIndex;
+	int curTabIndex = -1;
+	Shape buttonShape;
 
 	MouseState prevMouse;
 	KeyboardState prevKeyboard;

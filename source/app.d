@@ -20,6 +20,7 @@ alias Shader = GL3ShaderProgram;
 alias ShaderUnit = GLShaderUnit;
 alias Texture = GLTexture;
 
+alias Shape = GL3ShapePosition;
 alias Mesh = GL3MeshIndexPositionTextureNormal;
 alias Font = BMFont!(Texture, ResourceManager);
 
@@ -50,7 +51,7 @@ void main()
 	auto engine = new Engine;
 	with (engine)
 	{
-		auto window = new View("Fluffy");
+		auto window = new View(1280, 720, "SpaceD");
 		auto renderer = new Renderer;
 		window.setOpenGLVersion(3, 3);
 		auto world = add(window, renderer);
