@@ -11,6 +11,7 @@ import scenemanager;
 import trackgen;
 import text;
 
+import std.conv;
 import std.regex;
 import std.file;
 import std.bitmanip;
@@ -29,7 +30,6 @@ enum EditMode
 {
 	select,
 	grab,
-	scale,
 	width
 }
 
@@ -99,6 +99,16 @@ public:
 					else
 						sceneManager.setScene("main");
 				}
+				else if (ev.y < 256)
+					grab();
+				else if (ev.y < 320)
+					rewidth();
+				else if (ev.y < 384)
+					extrude();
+				else if (ev.y < 448)
+					del();
+				if (ev.y >= 192)
+					mouseDown = false;
 			}
 		}
 		if (ev.button == 2)
@@ -142,6 +152,28 @@ public:
 			saveTrack();
 	}
 
+	void grab()
+	{
+		mode = EditMode.grab;
+		relativeTo = lastMouse;
+	}
+
+	void rewidth()
+	{
+		mode = EditMode.width;
+		resetRelativeTo = true;
+	}
+
+	void extrude()
+	{
+		extend = true;
+	}
+
+	void del()
+	{
+		deleteSelected = true;
+	}
+
 	void update(World world)
 	{
 		renderer.begin(window);
@@ -153,29 +185,16 @@ public:
 		int[] selected;
 
 		bool applyEdit;
-		bool resetRelativeTo;
-		bool extend, deleteSelected;
 		if (!saving && !exiting)
 		{
 			if (Keyboard.state.isKeyPressed(Key.G) && !gWasDown)
-			{
-				mode = EditMode.grab;
-				relativeTo = lastMouse;
-			}
-			else if (Keyboard.state.isKeyPressed(Key.S) && !sWasDown)
-			{
-				mode = EditMode.scale;
-				resetRelativeTo = true;
-			}
+				grab();
 			else if (Keyboard.state.isKeyPressed(Key.W) && !wWasDown)
-			{
-				mode = EditMode.width;
-				resetRelativeTo = true;
-			}
+				rewidth();
 			else if (Keyboard.state.isKeyPressed(Key.E) && !eWasDown)
-				extend = true;
+				extrude();
 			else if (Keyboard.state.isKeyPressed(Key.Delete) && !delWasDown)
-				deleteSelected = true;
+				del();
 			if (!rightMouseDown && rightMouseWasDown)
 				mode = EditMode.select;
 			if (!mouseDown && mouseWasDown)
@@ -323,10 +342,12 @@ public:
 			mode = EditMode.select;
 
 		gWasDown = Keyboard.state.isKeyPressed(Key.G);
-		sWasDown = Keyboard.state.isKeyPressed(Key.S);
 		wWasDown = Keyboard.state.isKeyPressed(Key.W);
 		eWasDown = Keyboard.state.isKeyPressed(Key.E);
 		delWasDown = Keyboard.state.isKeyPressed(Key.Delete);
+		resetRelativeTo = false;
+		extend = false;
+		deleteSelected = false;
 
 		renderer.bind2D();
 
@@ -394,6 +415,14 @@ public:
 					renderer.fillRectangle(vec4(window.width - 200, 64, 200, 64), vec4(1, 1, 1, 0.2f));
 				else if (Mouse.state.y < 192)
 					renderer.fillRectangle(vec4(window.width - 200, 128, 200, 64), vec4(1, 1, 1, 0.2f));
+				else if (Mouse.state.y < 256)
+					renderer.fillRectangle(vec4(window.width - 200, 192, 200, 64), vec4(1, 1, 1, 0.2f));
+				else if (Mouse.state.y < 320)
+					renderer.fillRectangle(vec4(window.width - 200, 256, 200, 64), vec4(1, 1, 1, 0.2f));
+				else if (Mouse.state.y < 384)
+					renderer.fillRectangle(vec4(window.width - 200, 320, 200, 64), vec4(1, 1, 1, 0.2f));
+				else if (Mouse.state.y < 448)
+					renderer.fillRectangle(vec4(window.width - 200, 384, 200, 64), vec4(1, 1, 1, 0.2f));
 			}
 
 			float x = window.width - 190;
@@ -410,6 +439,26 @@ public:
 			renderer.modelview.push();
 			renderer.modelview.top *= mat4.translation(x, 176, 0) * mat4.scaling(768, 512, 1);
 			text.text = "Exit"d;
+			text.draw(renderer);
+			renderer.modelview.pop();
+			renderer.modelview.push();
+			renderer.modelview.top *= mat4.translation(x, 240, 0) * mat4.scaling(768, 512, 1);
+			text.text = "Grab (G)"d;
+			text.draw(renderer);
+			renderer.modelview.pop();
+			renderer.modelview.push();
+			renderer.modelview.top *= mat4.translation(x, 304, 0) * mat4.scaling(768, 512, 1);
+			text.text = "Resize Width (W)"d;
+			text.draw(renderer);
+			renderer.modelview.pop();
+			renderer.modelview.push();
+			renderer.modelview.top *= mat4.translation(x, 368, 0) * mat4.scaling(768, 512, 1);
+			text.text = "Extend (E)"d;
+			text.draw(renderer);
+			renderer.modelview.pop();
+			renderer.modelview.push();
+			renderer.modelview.top *= mat4.translation(x, 432, 0) * mat4.scaling(768, 512, 1);
+			text.text = "Delete"d;
 			text.draw(renderer);
 			renderer.modelview.pop();
 			renderer.modelview.pop();
@@ -473,8 +522,9 @@ private:
 	Mesh test;
 	bool mouseDown, mouseWheelDown, rightMouseDown;
 	bool mouseWasDown, mouseWheelWasDown, rightMouseWasDown;
-	bool gWasDown, sWasDown, wWasDown, eWasDown, delWasDown;
+	bool gWasDown, wWasDown, eWasDown, delWasDown;
 	bool saving, exiting;
+	bool resetRelativeTo, extend, deleteSelected;
 	bool isDirty;
 	EditMode mode;
 	int zoom = 100;
