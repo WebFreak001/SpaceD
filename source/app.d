@@ -11,8 +11,9 @@ import globstate;
 import scenemanager;
 import scenes.ingame;
 import scenes.leaderboard;
-import scenes.mapselect;
 import scenes.mainmenu;
+import scenes.mapedit;
+import scenes.mapselect;
 import shaderpool;
 
 alias View = SDLWindow;
@@ -95,6 +96,13 @@ void main()
 		auto mapselect = new MapselectScene();
 		mapselect.load(sceneManager, renderer, window, resources, shaders);
 		sceneManager.register(mapselect, "mapselect");
+
+		auto mapedit = new MapeditSelectScene();
+		mapedit.load(sceneManager, renderer, window, resources, shaders);
+		sceneManager.register(mapedit, "mapedit");
+		auto editor = new MapEditorScene();
+		editor.load(sceneManager, renderer, window, resources, shaders);
+		sceneManager.register(editor, "editor");
 
 		auto leaderboards = new LeaderboardScene();
 		leaderboards.load(sceneManager, renderer, window, resources, shaders);

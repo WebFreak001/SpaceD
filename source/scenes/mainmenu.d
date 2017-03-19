@@ -52,23 +52,28 @@ class MainMenuScene : IScene
 			GUIRectangle: logo, vec4(32, 32, 320, 89), Align.TopRight
 		}));
 		mixin(createEntity!("Play Button", q{
-			Button: "Play"d, vec4(0.69f, 0.224f, 0.192f, 1), vec4(1), vec4(80, 32, 300, 64), Align.TopLeft
+			Button: "Play"d, vec4(0.69f, 0.224f, 0.192f, 1), vec4(1), vec4(96, 32, 300, 64), Align.TopLeft
 			TabFocus: 0
 			SceneSwitchAction: "mapselect"
 		}));
-		mixin(createEntity!("Shop Button", q{
-			Button: "Shop"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(64, 112, 300, 64), Align.TopLeft
+		mixin(createEntity!("Create Button", q{
+			Button: "Create"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(80, 112, 300, 64), Align.TopLeft
 			TabFocus: 1
+			SceneSwitchAction: "mapedit"
+		}));
+		mixin(createEntity!("Shop Button", q{
+			Button: "Shop"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(64, 192, 300, 64), Align.TopLeft
+			TabFocus: 2
 			SceneSwitchAction: "shop"
 		}));
 		mixin(createEntity!("Settings Button", q{
-			Button: "Settings"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(48, 192, 300, 64), Align.TopLeft
-			TabFocus: 2
+			Button: "Settings"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(48, 272, 300, 64), Align.TopLeft
+			TabFocus: 3
 			SceneSwitchAction: "settings"
 		}));
 		mixin(createEntity!("Exit Button", q{
 			Button: "Exit"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(16, 16, 240, 64), Align.BottomLeft
-			TabFocus: 3
+			TabFocus: 4
 			SceneSwitchAction: "crash"
 		}));
 		moneyCounter = mixin(createEntity!("Money Counter", q{

@@ -246,3 +246,13 @@ struct Dots
 
 	mixin ComponentBase;
 }
+
+struct MapVertex
+{
+	vec2 pos;
+	float width;
+	Entity prev, next;
+	bool selected, selectNext;
+
+	mixin ComponentBase;
+}
