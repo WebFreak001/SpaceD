@@ -9,6 +9,7 @@ import app;
 import components;
 import scenemanager;
 import trackgen;
+import text;
 
 //dfmt off
 alias EditableMesh = GL3Mesh!(
@@ -34,8 +35,7 @@ public:
 	{
 		this.renderer = renderer;
 		this.window = window;
-		this.font = font;
-		this.textShader = textShader;
+		text = new Text(font, textShader);
 		this.sceneManager = sceneManager;
 		this.editShader = editShader;
 		this.editTexture = editTexture;
@@ -56,6 +56,8 @@ public:
 
 	void mouseWheel(MouseWheelEvent ev)
 	{
+		if (sceneManager.current != "editor")
+			return;
 		zoom -= ev.y * 5;
 		if (zoom < 1)
 			zoom = 1;
@@ -63,8 +65,25 @@ public:
 
 	void mouseButton(MouseButtonEvent ev)
 	{
+		if (sceneManager.current != "editor")
+			return;
 		if (ev.button == 1)
+		{
 			mouseDown = ev.state == SDL_PRESSED;
+			if (mode == EditMode.select && ev.x >= window.width - 200 && mouseDown)
+			{
+				if (ev.y < 64)
+				{
+
+				}
+				else if (ev.y < 128)
+					sceneManager.setScene("ingame");
+				else if (ev.y < 192)
+				{
+
+				}
+			}
+		}
 		if (ev.button == 2)
 			mouseWheelDown = ev.state == SDL_PRESSED;
 		if (ev.button == 3)
@@ -73,6 +92,8 @@ public:
 
 	void mouseMotion(MouseMotionEvent ev)
 	{
+		if (sceneManager.current != "editor")
+			return;
 		if (mouseWheelDown || (mouseDown && Keyboard.state.isKeyPressed(Key.LCtrl)))
 		{
 			offset.x -= ev.xrel * zoom * 0.005f;
@@ -125,7 +146,7 @@ public:
 		ptrdiff_t entityNum = 0;
 		MapVertex*[] vertices;
 
-		vec4[] controlPoints;
+		controlPoints.length = 0;
 		foreach (entity; world.entities)
 		{
 			if (entity.alive)
@@ -261,14 +282,60 @@ public:
 		eWasDown = Keyboard.state.isKeyPressed(Key.E);
 		delWasDown = Keyboard.state.isKeyPressed(Key.Delete);
 
+		renderer.bind2D();
+
+		renderer.modelview.push(mat4.identity);
+		vec4 sidebar = vec4(window.width - 200, 0, 200, window.height);
+		renderer.fillRectangle(sidebar, vec4(0.216f, 0.278f, 0.31f, 1));
+
+		if (mode == EditMode.select && Mouse.state.x >= window.width - 200)
+		{
+			if (Mouse.state.y < 64)
+				renderer.fillRectangle(vec4(window.width - 200, 0, 200, 64), vec4(1, 1, 1, 0.2f));
+			else if (Mouse.state.y < 128)
+				renderer.fillRectangle(vec4(window.width - 200, 64, 200, 64), vec4(1, 1, 1, 0.2f));
+			else if (Mouse.state.y < 192)
+				renderer.fillRectangle(vec4(window.width - 200, 128, 200, 64), vec4(1, 1, 1, 0.2f));
+		}
+
+		float x = window.width - 190;
+		renderer.modelview.push();
+		renderer.modelview.top *= mat4.translation(x, 48, 0) * mat4.scaling(768, 512, 1);
+		text.text = "Save"d;
+		text.draw(renderer);
+		renderer.modelview.pop();
+		renderer.modelview.push();
+		renderer.modelview.top *= mat4.translation(x, 112, 0) * mat4.scaling(768, 512, 1);
+		text.text = "Test"d;
+		text.draw(renderer);
+		renderer.modelview.pop();
+		renderer.modelview.push();
+		renderer.modelview.top *= mat4.translation(x, 176, 0) * mat4.scaling(768, 512, 1);
+		text.text = "Exit"d;
+		text.draw(renderer);
+		renderer.modelview.pop();
+		renderer.modelview.pop();
+
+		renderer.bind3D();
 		renderer.end(window);
+	}
+
+	Track toTrack(string name = "Test Course")
+	{
+		Track track;
+		foreach (p; controlPoints)
+		{
+			track.innerRing ~= p.xy;
+			track.widths ~= p.z;
+		}
+		track.name = name;
+		return track;
 	}
 
 private:
 	Renderer renderer;
 	View window;
-	Font font;
-	Shader textShader;
+	Text text;
 	SceneManager sceneManager;
 	Texture editTexture;
 	Shader editShader, testShader;
@@ -282,4 +349,5 @@ private:
 	vec2 offset = vec2(0);
 	vec2 lastMouse = vec2(0);
 	vec2 relativeTo = vec2(0);
+	vec4[] controlPoints;
 }

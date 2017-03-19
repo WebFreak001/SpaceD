@@ -145,6 +145,25 @@ enum Align : ubyte
 	BottomCenter
 }
 
+vec4 compute(vec4 rect, Align alignment, float width, float height)
+{
+	final switch (alignment) with (Align)
+	{
+	case TopLeft:
+		return rect;
+	case BottomLeft:
+		return vec4(rect.x, height - rect.a - rect.y, rect.zw);
+	case TopRight:
+		return vec4(width - rect.z - rect.x, rect.y, rect.zw);
+	case BottomRight:
+		return vec4(width - rect.z - rect.x, height - rect.a - rect.y, rect.zw);
+	case TopCenter:
+		return vec4(rect.x + width * 0.5f, rect.y, rect.zw);
+	case BottomCenter:
+		return vec4(rect.x + width * 0.5f, height - rect.a - rect.y, rect.zw);
+	}
+}
+
 struct Button
 {
 	dstring text;

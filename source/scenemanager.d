@@ -13,7 +13,8 @@ abstract class IScene
 		this.world = new World();
 	}
 
-	abstract void load(SceneManager sceneManager, Renderer renderer, View window, ResourceManager resources, ShaderPool shaders);
+	abstract void load(SceneManager sceneManager, Renderer renderer, View window,
+			ResourceManager resources, ShaderPool shaders);
 	abstract void preEnter(IScene prev);
 	abstract void postExit(IScene next);
 
@@ -34,6 +35,8 @@ final class SceneManager
 
 	void setScene(string name)
 	{
+		prev = cur;
+		cur = name;
 		auto sceneP = name in scenes;
 		if (!sceneP)
 			throw new Exception("Scene not found");
@@ -46,8 +49,25 @@ final class SceneManager
 		curScene = scene;
 	}
 
+	string current()
+	{
+		return cur;
+	}
+
+	string previous()
+	{
+		return prev;
+	}
+
+	void back()
+	{
+		if (prev.length)
+			setScene(prev);
+	}
+
 private:
 	World world;
+	string prev, cur;
 	IScene curScene;
 	IScene[string] scenes;
 }

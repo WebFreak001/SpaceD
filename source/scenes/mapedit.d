@@ -11,6 +11,7 @@ import components;
 import globstate;
 import scenemanager;
 import shaderpool;
+import scenes.ingame;
 import systems.menu;
 import systems.editor;
 import trackgen;
@@ -154,12 +155,14 @@ class MapEditorScene : IScene
 
 		auto roadTex = resources.load!Texture("textures/street.png");
 		auto testMesh = resources.load!Scene("models/pole.obj").value.meshes[0].convertAssimpMesh;
-		world.addSystem!EditorSystem(renderer, window, font, textShader,
+		editor = world.addSystem!EditorSystem(renderer, window, font, textShader,
 				sceneManager, editShader, roadTex, shader, testMesh);
 	}
 
 	override void preEnter(IScene prevScene)
 	{
+		if (cast(IngameScene) prevScene)
+			return;
 		world.entities.length = 0;
 		MapeditSelectScene selector = cast(MapeditSelectScene) prevScene;
 		Track track = selector.choices[selector.index];
@@ -187,4 +190,6 @@ class MapEditorScene : IScene
 	override void postExit(IScene next)
 	{
 	}
+
+	EditorSystem editor;
 }

@@ -16,6 +16,7 @@ import particles;
 import scenemanager;
 import shaderpool;
 import scenes.mapselect;
+import scenes.mapedit;
 import systems.display;
 import systems.logic;
 import trackgen;
@@ -124,6 +125,11 @@ class IngameScene : IScene
 		{
 			auto mapSel = (cast(MapselectScene) prev);
 			track = mapSel.choices[mapSel.index];
+		}
+		else if (cast(MapEditorScene) prev)
+		{
+			auto mapEdit = (cast(MapEditorScene) prev);
+			track = mapEdit.editor.toTrack;
 		}
 		else
 			track = generateTrack;

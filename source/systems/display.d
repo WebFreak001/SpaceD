@@ -2,7 +2,9 @@ module systems.display;
 
 import avocado.core;
 import avocado.gl3;
+import avocado.sdl2;
 import avocado.dfs;
+import avocado.input;
 
 import app;
 import text;
@@ -197,7 +199,9 @@ public:
 		renderer.bind3D();
 		renderer.end(window);
 		if (lap > maxLaps)
-			sceneManager.setScene("leaderboards");
+			sceneManager.setScene(sceneManager.previous == "editor" ? "editor" : "leaderboards");
+		if (Keyboard.state.isKeyPressed(Key.Escape))
+			sceneManager.back();
 	}
 
 	void drawRacingUI(ubyte lap, VehiclePhysics*[] allPlayers, RaceInfo* raceInfo)
