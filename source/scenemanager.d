@@ -34,7 +34,10 @@ final class SceneManager
 
 	void setScene(string name)
 	{
-		auto scene = scenes[name];
+		auto sceneP = name in scenes;
+		if (!sceneP)
+			throw new Exception("Scene not found");
+		auto scene = *sceneP;
 		scene.preEnter(curScene);
 		world.systems = scene.world.systems;
 		world.entities = scene.world.entities;
