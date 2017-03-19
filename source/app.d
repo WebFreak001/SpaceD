@@ -11,6 +11,7 @@ import globstate;
 import scenemanager;
 import scenes.ingame;
 import scenes.leaderboard;
+import scenes.mapselect;
 import scenes.mainmenu;
 import shaderpool;
 
@@ -90,6 +91,10 @@ void main()
 		auto settings = new SettingsScene();
 		settings.load(sceneManager, renderer, window, resources, shaders);
 		sceneManager.register(settings, "settings");
+
+		auto mapselect = new MapselectScene();
+		mapselect.load(sceneManager, renderer, window, resources, shaders);
+		sceneManager.register(mapselect, "mapselect");
 
 		auto leaderboards = new LeaderboardScene();
 		leaderboards.load(sceneManager, renderer, window, resources, shaders);

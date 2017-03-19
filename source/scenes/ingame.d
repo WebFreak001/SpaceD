@@ -15,6 +15,7 @@ import globstate;
 import particles;
 import scenemanager;
 import shaderpool;
+import scenes.mapselect;
 import systems.display;
 import systems.logic;
 import trackgen;
@@ -118,7 +119,15 @@ class IngameScene : IScene
 					info.time = -3;
 			}
 		}
-		auto track = generateTrack;
+		Track track;
+		if (cast(MapselectScene) prev)
+		{
+			auto mapSel = (cast(MapselectScene) prev);
+			track = mapSel.choices[mapSel.index];
+		}
+		else
+			track = generateTrack;
+		track.generateOuterAndMeshes();
 		mixin(createEntity!("Track", q{
 			EntityDisplay: track.roadMesh, shader, street, mat4.identity
 			Transformation: mat4.translation(0, 0, 0)

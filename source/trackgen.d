@@ -5,6 +5,9 @@ import avocado.gl3;
 
 import app;
 import std.random;
+import std.bitmanip;
+
+enum RoadWidth = 50;
 
 struct Track
 {
@@ -12,92 +15,37 @@ struct Track
 	float[] widths;
 	Mesh roadMesh;
 	Mesh outerRingMesh, innerRingMesh;
-}
+	string name;
+	bool isRandom;
 
-T smooth(T, size_t l)(T[l] arr, size_t i, int n)
-{
-	T sum = arr[i];
-	for (int it = 1; it <= n; it++)
-		sum += arr[(i + it) % l] + arr[(i + l - it) % l];
-	return sum / cast(float)(n * 2 + 1);
-}
-
-Track generateTrack()
-{
-	enum RoadWidth = 50;
-	enum Scale = 400;
-
-	vec2[96] trackPath;
-	float[96] widthMuls;
-	widthMuls[] = 1;
-	// generate circle
-	foreach (i, ref vec; trackPath)
+	void generateOuterAndMeshes()
 	{
-		float n = i / cast(float) trackPath.length * 3.1415926f * 2;
-		vec = vec2(sin(n), cos(n));
-	}
-	// randomly resize circle & smooth circle (multiple times)
-	for (int it = 1; it < 10; it++)
-	{
-		float n = 1.0f / cast(float) it;
-		foreach (ref vec; trackPath)
-			vec *= uniform(1 - n, 1.1f + n);
-		foreach (i, ref vec; trackPath)
-			vec = trackPath.smooth(i, 2);
-	}
-	// final smoothing
-	foreach (i, ref vec; trackPath)
-		vec = trackPath.smooth(i, 2);
-	Track track;
-	track.innerRing.reserve(trackPath.length);
-	track.outerRing.reserve(trackPath.length);
-	with (track)
-	{
+		if (outerRing.length == innerRing.length)
+			return;
+		outerRing.reserve(innerRing.length);
 		roadMesh = new Mesh();
 		roadMesh.primitiveType = PrimitiveType.TriangleStrip;
 		innerRingMesh = new Mesh();
 		innerRingMesh.primitiveType = PrimitiveType.TriangleStrip;
 		outerRingMesh = new Mesh();
 		outerRingMesh.primitiveType = PrimitiveType.TriangleStrip;
-		// generate road width multipliers (wider on curves, more narrow on straight paths)
-		foreach (i, pos; trackPath)
-		{
-			vec2 prev = trackPath[(i + $ - 1) % $];
-			vec2 next = trackPath[(i + 1) % $];
-
-			vec2 dirA = (prev - pos).normalized;
-			vec2 dirB = (pos - next).normalized;
-
-			float mul = (dirA - dirB).length * 7 + 0.3f;
-			if (mul < 0.7f)
-				mul = 0.7f;
-			if (mul > 3)
-				mul = 3;
-			widthMuls[i] = mul;
-		}
-		// smooth width multipliers
-		foreach (i, ref mul; widthMuls)
-			mul = widthMuls.smooth(i, 8);
-		widths = widthMuls[].dup;
 		// generate mesh data
-		foreach (i, pos; trackPath)
+		foreach (i, inPos; innerRing)
 		{
-			vec2 prev = trackPath[(i + $ - 1) % $];
-			vec2 next = trackPath[(i + 1) % $];
+			vec2 prev = innerRing[(i + $ - 1) % $];
+			vec2 next = innerRing[(i + 1) % $];
 
-			vec2 dirA = (prev - pos).normalized;
-			vec2 dirB = (pos - next).normalized;
+			vec2 dirA = (prev - inPos).normalized;
+			vec2 dirB = (inPos - next).normalized;
 
 			vec2 avgDir = (dirA + dirB).normalized;
 			vec2 ortho = vec2(-avgDir.y, avgDir.x);
 
 			float uvX = (i % 2) == 0 ? 1 : 0;
 
-			vec2 inPos = pos * Scale;
-			vec2 outPos = pos * Scale - ortho * RoadWidth * widthMuls[i];
+			vec2 outPos = inPos - ortho * RoadWidth * widths[i];
 
-			track.innerRing ~= inPos;
-			track.outerRing ~= outPos;
+			outerRing ~= outPos;
 
 			roadMesh.addIndex(cast(int) i * 2);
 			roadMesh.addPosition(vec3(inPos.x, 0, inPos.y));
@@ -139,5 +87,90 @@ Track generateTrack()
 		outerRingMesh.addIndex(1);
 		outerRingMesh.generate();
 	}
+}
+
+T smooth(T, size_t l)(T[l] arr, size_t i, int n)
+{
+	T sum = arr[i];
+	for (int it = 1; it <= n; it++)
+		sum += arr[(i + it) % l] + arr[(i + l - it) % l];
+	return sum / cast(float)(n * 2 + 1);
+}
+
+Track generateTrack()
+{
+	enum Scale = 400;
+
+	vec2[96] trackPath;
+	float[96] widthMuls;
+	widthMuls[] = 1;
+	// generate circle
+	foreach (i, ref vec; trackPath)
+	{
+		float n = i / cast(float) trackPath.length * 3.1415926f * 2;
+		vec = vec2(sin(n), cos(n));
+	}
+	// randomly resize circle & smooth circle (multiple times)
+	for (int it = 1; it < 10; it++)
+	{
+		float n = 1.0f / cast(float) it;
+		foreach (ref vec; trackPath)
+			vec *= uniform(1 - n, 1.1f + n);
+		foreach (i, ref vec; trackPath)
+			vec = trackPath.smooth(i, 2);
+	}
+	// final smoothing
+	foreach (i, ref vec; trackPath)
+		vec = trackPath.smooth(i, 2);
+	Track track;
+	track.name = "Randomly Generated Map";
+	track.isRandom = true;
+	track.innerRing.reserve(trackPath.length);
+	with (track)
+	{
+		// generate road width multipliers (wider on curves, more narrow on straight paths)
+		foreach (i, pos; trackPath)
+		{
+			vec2 prev = trackPath[(i + $ - 1) % $];
+			vec2 next = trackPath[(i + 1) % $];
+
+			vec2 dirA = (prev - pos).normalized;
+			vec2 dirB = (pos - next).normalized;
+
+			float mul = (dirA - dirB).length * 7 + 0.3f;
+			if (mul < 0.7f)
+				mul = 0.7f;
+			if (mul > 3)
+				mul = 3;
+			widthMuls[i] = mul;
+		}
+		// smooth width multipliers
+		foreach (i, ref mul; widthMuls)
+			mul = widthMuls.smooth(i, 8);
+		widths = widthMuls[].dup;
+		// generate mesh data
+		foreach (i, pos; trackPath)
+			track.innerRing ~= pos * Scale;
+	}
+	track.generateOuterAndMeshes();
 	return track;
+}
+
+Track trackFromMemory(ubyte[] mem)
+{
+	Track ret;
+	ret.name = cast(string) mem[1 .. 1 + mem[0]];
+	size_t index = 1 + mem[0];
+	uint numParts = mem.peek!uint(&index);
+	ret.innerRing.reserve(numParts);
+	ret.widths.reserve(numParts);
+	for (uint i = 0; i < numParts; i++)
+	{
+		float x = mem.peek!float(&index);
+		float y = mem.peek!float(&index);
+		float width = mem.peek!float(&index);
+		ret.innerRing ~= vec2(x, y);
+		ret.widths ~= width;
+	}
+	return ret;
 }

@@ -63,6 +63,14 @@ public:
 					0.5f), vec2(0.5f, 1), vec2(0.5f, 0.5f), vec2(0.5f, 1), vec2(0, 1)]);
 		chevronR.generate();
 
+		dot = new GL3ShapePosition();
+		dot.primitiveType = PrimitiveType.TriangleFan;
+		vec2[] dotPos = [vec2(8, 8)];
+		for (int i = 0; i <= 9; i++)
+			dotPos ~= vec2(sin(i / 9.0f * PI * 2) * 8 + 8, cos(i / 9.0f * PI * 2) * 8 + 8);
+		dot.addPositionArray(dotPos);
+		dot.generate();
+
 		window.onKeyboard ~= &keyboardEvent;
 	}
 
@@ -251,6 +259,18 @@ public:
 						renderer.modelview.pop();
 					}
 				}
+				{
+					Dots* dots;
+					if (entity.fetch(dots))
+					{
+						vec4 baseRect = vec4(dots.pos.x - dots.numDots * 12 + 4, dots.pos.y,
+								dots.numDots * 24 - 8, 16);
+						vec4 rect = compute(baseRect, dots.alignment, window.width, window.height);
+						for (int i = 0; i < dots.numDots; i++)
+							renderer.fillShape(dot, rect.xy + vec2(i * 24, 0),
+									dots.dotsIndex == i ? vec4(1) : vec4(1, 1, 1, 0.5f));
+					}
+				}
 			}
 		}
 
@@ -280,7 +300,7 @@ private:
 	View window;
 	Text text;
 	int curTabIndex = -1;
-	Shape buttonShape, chevronL, chevronR;
+	Shape buttonShape, chevronL, chevronR, dot;
 	Key lastKey = cast(Key) 0;
 
 	MouseState prevMouse;

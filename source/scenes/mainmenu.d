@@ -54,7 +54,7 @@ class MainMenuScene : IScene
 		mixin(createEntity!("Play Button", q{
 			Button: "Play"d, vec4(0.69f, 0.224f, 0.192f, 1), vec4(1), vec4(80, 32, 300, 64), Align.TopLeft
 			TabFocus: 0
-			SceneSwitchAction: "ingame"
+			SceneSwitchAction: "mapselect"
 		}));
 		mixin(createEntity!("Shop Button", q{
 			Button: "Shop"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(64, 112, 300, 64), Align.TopLeft

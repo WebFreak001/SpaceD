@@ -122,20 +122,6 @@ class LeaderboardScene : IScene
 	Entity pbTag;
 }
 
-dstring ndigit(ulong digit, uint n)
-{
-	dstring s = digit.to!dstring;
-	while (s.length < n)
-		s = '0' ~ s;
-	return s;
-}
-
-dstring makeTime(ulong msecs)
-{
-	ulong secs = msecs / 1000;
-	return (secs / 60).ndigit(2) ~ ':' ~ (secs % 60).ndigit(2) ~ '.' ~ (msecs % 1000).ndigit(4);
-}
-
 dstring placement(size_t n)
 {
 	dstring s = (n + 1).to!dstring;

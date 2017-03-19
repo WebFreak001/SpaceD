@@ -82,6 +82,20 @@ struct GlobalState
 
 __gshared GlobalState globalState;
 
+dstring ndigit(ulong digit, uint n)
+{
+	dstring s = digit.to!dstring;
+	while (s.length < n)
+		s = '0' ~ s;
+	return s;
+}
+
+dstring makeTime(ulong msecs)
+{
+	ulong secs = msecs / 1000;
+	return (secs / 60).ndigit(2) ~ ':' ~ (secs % 60).ndigit(2) ~ '.' ~ (msecs % 1000).ndigit(4);
+}
+
 struct PlayerSettings
 {
 	PlayerControls.ControlScheme controls;

@@ -237,3 +237,12 @@ struct DelegateAction
 
 	mixin ComponentBase;
 }
+
+struct Dots
+{
+	vec2 pos;
+	Align alignment;
+	int numDots, dotsIndex;
+
+	mixin ComponentBase;
+}
