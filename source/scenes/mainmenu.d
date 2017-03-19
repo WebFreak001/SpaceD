@@ -167,30 +167,30 @@ class SettingsScene : IScene
 
 		world.addSystem!MenuSystem(renderer, window, font, textShader, sceneManager);
 
-		mixin(createEntity!("Keybind", q{
-			Button: "Accelerate: "d ~ settings.controls.accelerate.to!dstring, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(16, 16, 300, 48)
+		keybinds ~= mixin(createEntity!("Keybind", q{
+			Button: "Accelerate: "d ~ settings.controls.accelerate.to!dstring, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(-1000, 16, 300, 48)
 			KeybindAction: "Accelerate", "accelerate"
-		}));
-		mixin(createEntity!("Keybind", q{
-			Button: "Steer Left: "d ~ settings.controls.steerLeft.to!dstring, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(16, 70, 300, 48)
+		}, "world", true));
+		keybinds ~= mixin(createEntity!("Keybind", q{
+			Button: "Steer Left: "d ~ settings.controls.steerLeft.to!dstring, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(-1000, 70, 300, 48)
 			KeybindAction: "Steer Left", "steerLeft"
-		}));
-		mixin(createEntity!("Keybind", q{
-			Button: "Decelerate: "d ~ settings.controls.decelerate.to!dstring, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(16, 124, 300, 48)
+		}, "world", true));
+		keybinds ~= mixin(createEntity!("Keybind", q{
+			Button: "Decelerate: "d ~ settings.controls.decelerate.to!dstring, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(-1000, 124, 300, 48)
 			KeybindAction: "Decelerate", "decelerate"
-		}));
-		mixin(createEntity!("Keybind", q{
-			Button: "Steer Right: "d ~ settings.controls.steerRight.to!dstring, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(16, 178, 300, 48)
+		}, "world", true));
+		keybinds ~= mixin(createEntity!("Keybind", q{
+			Button: "Steer Right: "d ~ settings.controls.steerRight.to!dstring, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(-1000, 178, 300, 48)
 			KeybindAction: "Steer Right", "steerRight"
-		}));
-		mixin(createEntity!("Keybind", q{
-			Button: "Boost: "d ~ settings.controls.boost.to!dstring, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(16, 232, 300, 48)
+		}, "world", true));
+		keybinds ~= mixin(createEntity!("Keybind", q{
+			Button: "Boost: "d ~ settings.controls.boost.to!dstring, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(-1000, 232, 300, 48)
 			KeybindAction: "Boost", "boost"
-		}));
-		mixin(createEntity!("Keybind", q{
-			Button: "Look Back: "d ~ settings.controls.lookBack.to!dstring, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(16, 286, 300, 48)
+		}, "world", true));
+		keybinds ~= mixin(createEntity!("Keybind", q{
+			Button: "Look Back: "d ~ settings.controls.lookBack.to!dstring, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(-1000, 286, 300, 48)
 			KeybindAction: "Look Back", "lookBack"
-		}));
+		}, "world", true));
 
 		mixin(createEntity!("Back Button", q{
 			Button: "Back"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(16, 16, 240, 64), Align.BottomLeft
@@ -199,11 +199,17 @@ class SettingsScene : IScene
 		}));
 	}
 
+	Entity[] keybinds;
 	override void preEnter(IScene prev)
 	{
+		world.tick();
+		foreach (ref ent; keybinds)
+			ent.get!Button.rect.x = 16;
 	}
 
 	override void postExit(IScene next)
 	{
+		foreach (ref ent; keybinds)
+			ent.get!Button.rect.x = -1000;
 	}
 }
