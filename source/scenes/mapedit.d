@@ -18,6 +18,7 @@ import trackgen;
 
 import std.conv;
 import std.file;
+import std.path;
 
 class MapeditSelectScene : IScene
 {
@@ -107,8 +108,14 @@ class MapeditSelectScene : IScene
 	override void preEnter(IScene prev)
 	{
 		choices = [generateTrack];
+		files = [null];
 		foreach (map; dirEntries("res/maps", SpanMode.shallow)) // TODO: implement this into ResourceManager
+		{
+			if (map.extension != ".map")
+				continue;
+			files ~= map;
 			choices ~= trackFromMemory(cast(ubyte[]) read(map));
+		}
 		index = 0;
 		dots.get!Dots.numDots = cast(int) choices.length;
 		updateMap();
@@ -120,6 +127,7 @@ class MapeditSelectScene : IScene
 
 	SceneManager sceneManager;
 	Entity mapTitle, dots, preview, editBtn;
+	string[] files;
 	Track[] choices;
 	size_t index;
 }
@@ -185,6 +193,9 @@ class MapEditorScene : IScene
 		first.get!MapVertex.prev = prev;
 		first.finalize();
 		prev.finalize();
+		editor.firstSave = true;
+		editor.name = track.name;
+		editor.file = selector.files[selector.index];
 	}
 
 	override void postExit(IScene next)

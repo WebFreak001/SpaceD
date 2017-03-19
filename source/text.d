@@ -40,6 +40,8 @@ public:
 		foreach (c; text)
 		{
 			auto info = _font.value.getChar(c);
+			if (info.id == dchar.init)
+				info = _font.value.getChar('�'); // sorry CJK plane
 			_chars ~= vec4(info.x * _iWidth, info.y * _iHeight, info.width * _iWidth,
 					info.height * _iHeight);
 			_positions ~= vec2((x + info.xoffset) * _iWidth,

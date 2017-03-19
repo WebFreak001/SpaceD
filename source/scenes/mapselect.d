@@ -16,6 +16,7 @@ import trackgen;
 
 import std.conv;
 import std.file;
+import std.path;
 
 class MapselectScene : IScene
 {
@@ -109,7 +110,11 @@ class MapselectScene : IScene
 	{
 		choices = [generateTrack];
 		foreach (map; dirEntries("res/maps", SpanMode.shallow)) // TODO: implement this into ResourceManager
+		{
+			if (map.extension != ".map")
+				continue;
 			choices ~= trackFromMemory(cast(ubyte[]) read(map));
+		}
 		index = 0;
 		dots.get!Dots.numDots = cast(int) choices.length;
 		updateMap();

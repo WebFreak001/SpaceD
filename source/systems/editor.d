@@ -11,6 +11,12 @@ import scenemanager;
 import trackgen;
 import text;
 
+import std.regex;
+import std.file;
+import std.bitmanip;
+
+auto invalid = ctRegex!`\W`;
+
 //dfmt off
 alias EditableMesh = GL3Mesh!(
 	BufferElement!("Position", 2, float, false, BufferType.Element, true),
@@ -52,6 +58,8 @@ public:
 		window.onMouseButton ~= &mouseButton;
 		window.onMouseMotion ~= &mouseMotion;
 		window.onMouseWheel ~= &mouseWheel;
+		window.onTextInput ~= &textInput;
+		window.onKeyboard ~= &keyboard;
 	}
 
 	void mouseWheel(MouseWheelEvent ev)
@@ -70,17 +78,26 @@ public:
 		if (ev.button == 1)
 		{
 			mouseDown = ev.state == SDL_PRESSED;
-			if (mode == EditMode.select && ev.x >= window.width - 200 && mouseDown)
+			if (mode == EditMode.select && ev.x >= window.width - 200 && mouseDown && !saving && !exiting)
 			{
 				if (ev.y < 64)
 				{
-
+					if (firstSave)
+					{
+						file = null;
+						saving = true;
+					}
+					else
+						saveTrack();
 				}
 				else if (ev.y < 128)
 					sceneManager.setScene("ingame");
 				else if (ev.y < 192)
 				{
-
+					if (isDirty)
+						exiting = true;
+					else
+						sceneManager.setScene("main");
 				}
 			}
 		}
@@ -103,6 +120,28 @@ public:
 				(ev.y - window.height * 0.5f) / cast(float) window.height * 2) * zoom + offset;
 	}
 
+	void textInput(TextInputEvent ev)
+	{
+		if (sceneManager.current != "editor")
+			return;
+		if (saving)
+		{
+			name ~= ev.text;
+			if (name.length > 255)
+				name.length = 255;
+		}
+	}
+
+	void keyboard(KeyboardEvent ev)
+	{
+		if (sceneManager.current != "editor")
+			return;
+		if (ev.type == SDL_KEYDOWN && ev.keysym.sym == Key.Backspace && name.length > 0 && saving)
+			name.length--;
+		if (ev.type == SDL_KEYDOWN && ev.keysym.sym == Key.Return && name.length > 0 && saving)
+			saveTrack();
+	}
+
 	void update(World world)
 	{
 		renderer.begin(window);
@@ -116,31 +155,35 @@ public:
 		bool applyEdit;
 		bool resetRelativeTo;
 		bool extend, deleteSelected;
-		if (Keyboard.state.isKeyPressed(Key.G) && !gWasDown)
+		if (!saving && !exiting)
 		{
-			mode = EditMode.grab;
-			relativeTo = lastMouse;
+			if (Keyboard.state.isKeyPressed(Key.G) && !gWasDown)
+			{
+				mode = EditMode.grab;
+				relativeTo = lastMouse;
+			}
+			else if (Keyboard.state.isKeyPressed(Key.S) && !sWasDown)
+			{
+				mode = EditMode.scale;
+				resetRelativeTo = true;
+			}
+			else if (Keyboard.state.isKeyPressed(Key.W) && !wWasDown)
+			{
+				mode = EditMode.width;
+				resetRelativeTo = true;
+			}
+			else if (Keyboard.state.isKeyPressed(Key.E) && !eWasDown)
+				extend = true;
+			else if (Keyboard.state.isKeyPressed(Key.Delete) && !delWasDown)
+				deleteSelected = true;
+			if (!rightMouseDown && rightMouseWasDown)
+				mode = EditMode.select;
+			if (!mouseDown && mouseWasDown)
+				applyEdit = true;
 		}
-		else if (Keyboard.state.isKeyPressed(Key.S) && !sWasDown)
-		{
-			mode = EditMode.scale;
-			resetRelativeTo = true;
-		}
-		else if (Keyboard.state.isKeyPressed(Key.W) && !wWasDown)
-		{
-			mode = EditMode.width;
-			resetRelativeTo = true;
-		}
-		else if (Keyboard.state.isKeyPressed(Key.E) && !eWasDown)
-			extend = true;
-		else if (Keyboard.state.isKeyPressed(Key.Delete) && !delWasDown)
-			deleteSelected = true;
-		if (!rightMouseDown && rightMouseWasDown)
-			mode = EditMode.select;
-		if (!mouseDown && mouseWasDown)
-			applyEdit = true;
 
-		bool select = rightMouseDown && !rightMouseWasDown && mode == EditMode.select;
+		bool select = rightMouseDown && !rightMouseWasDown
+			&& mode == EditMode.select && !saving && !exiting;
 		bool clearSelect = select && !Keyboard.state.isKeyPressed(Key.LShift);
 		ptrdiff_t foundSelect = -1;
 		ptrdiff_t entityNum = 0;
@@ -180,6 +223,7 @@ public:
 							next.prev = newV;
 							vertex.next = newV;
 							vertex.selected = false;
+							isDirty = true;
 						}
 						if (vertex.selected && deleteSelected)
 						{
@@ -188,6 +232,7 @@ public:
 							if (other == entity)
 								entity = vertex.prev;
 							other.alive = false;
+							isDirty = true;
 						}
 						vec2 modPos = vertex.pos;
 						float modWidth = vertex.width;
@@ -201,6 +246,7 @@ public:
 						{
 							vertex.pos = modPos;
 							vertex.width = modWidth;
+							isDirty = true;
 						}
 						if (vertex.selectNext)
 						{
@@ -285,36 +331,89 @@ public:
 		renderer.bind2D();
 
 		renderer.modelview.push(mat4.identity);
-		vec4 sidebar = vec4(window.width - 200, 0, 200, window.height);
-		renderer.fillRectangle(sidebar, vec4(0.216f, 0.278f, 0.31f, 1));
-
-		if (mode == EditMode.select && Mouse.state.x >= window.width - 200)
+		if (exiting)
 		{
-			if (Mouse.state.y < 64)
-				renderer.fillRectangle(vec4(window.width - 200, 0, 200, 64), vec4(1, 1, 1, 0.2f));
-			else if (Mouse.state.y < 128)
-				renderer.fillRectangle(vec4(window.width - 200, 64, 200, 64), vec4(1, 1, 1, 0.2f));
-			else if (Mouse.state.y < 192)
-				renderer.fillRectangle(vec4(window.width - 200, 128, 200, 64), vec4(1, 1, 1, 0.2f));
+			vec4 dialog = vec4(window.width * 0.5f - 200, window.height * 0.5f - 50, 400, 100);
+			renderer.fillRectangle(dialog, vec4(0.216f, 0.278f, 0.31f, 1));
+			renderer.modelview.push();
+			text.text = "Are you sure you want to exit without saving?";
+			renderer.modelview.top *= mat4.translation(window.width * 0.5f - 190,
+					window.height * 0.5f - 10, 0) * mat4.scaling(768 * 0.5f, 512 * 0.5f, 1);
+			text.draw(renderer);
+			renderer.modelview.pop();
+			if (Mouse.state.x >= dialog.x && Mouse.state.x <= dialog.x + dialog.z
+					&& Mouse.state.y > window.height * 0.5f && Mouse.state.y <= dialog.y + dialog.a)
+			{
+				if (Mouse.state.x < window.width * 0.5f)
+				{
+					renderer.fillRectangle(vec4(window.width * 0.5f - 200,
+							window.height * 0.5f, 200, 50), vec4(1, 1, 1, 0.5f));
+					if (Mouse.state.isButtonPressed(1))
+						sceneManager.setScene("main");
+				}
+				else
+				{
+					renderer.fillRectangle(vec4(window.width * 0.5f, window.height * 0.5f,
+							200, 50), vec4(1, 1, 1, 0.5f));
+					if (Mouse.state.isButtonPressed(1))
+						exiting = false;
+				}
+			}
+			renderer.modelview.push();
+			text.text = "Discard Changes";
+			renderer.modelview.top *= mat4.translation(window.width * 0.5f - 190,
+					window.height * 0.5f + 40, 0) * mat4.scaling(768 * 0.5f, 512 * 0.5f, 1);
+			text.draw(renderer);
+			renderer.modelview.pop();
+			renderer.modelview.push();
+			text.text = "Cancel";
+			renderer.modelview.top *= mat4.translation(window.width * 0.5f + 10,
+					window.height * 0.5f + 40, 0) * mat4.scaling(768 * 0.5f, 512 * 0.5f, 1);
+			text.draw(renderer);
+			renderer.modelview.pop();
 		}
+		else if (saving)
+		{
+			renderer.modelview.push();
+			text.text = "Name: "d ~ name.to!dstring;
+			renderer.modelview.top *= mat4.translation(window.width * 0.5f - text.textWidth * 768 * 0.5f,
+					window.height * 0.5f, 0) * mat4.scaling(768, 512, 1);
+			text.draw(renderer);
+			renderer.modelview.pop();
+		}
+		else
+		{
+			vec4 sidebar = vec4(window.width - 200, 0, 200, window.height);
+			renderer.fillRectangle(sidebar, vec4(0.216f, 0.278f, 0.31f, 1));
 
-		float x = window.width - 190;
-		renderer.modelview.push();
-		renderer.modelview.top *= mat4.translation(x, 48, 0) * mat4.scaling(768, 512, 1);
-		text.text = "Save"d;
-		text.draw(renderer);
-		renderer.modelview.pop();
-		renderer.modelview.push();
-		renderer.modelview.top *= mat4.translation(x, 112, 0) * mat4.scaling(768, 512, 1);
-		text.text = "Test"d;
-		text.draw(renderer);
-		renderer.modelview.pop();
-		renderer.modelview.push();
-		renderer.modelview.top *= mat4.translation(x, 176, 0) * mat4.scaling(768, 512, 1);
-		text.text = "Exit"d;
-		text.draw(renderer);
-		renderer.modelview.pop();
-		renderer.modelview.pop();
+			if (mode == EditMode.select && Mouse.state.x >= window.width - 200)
+			{
+				if (Mouse.state.y < 64)
+					renderer.fillRectangle(vec4(window.width - 200, 0, 200, 64), vec4(1, 1, 1, 0.2f));
+				else if (Mouse.state.y < 128)
+					renderer.fillRectangle(vec4(window.width - 200, 64, 200, 64), vec4(1, 1, 1, 0.2f));
+				else if (Mouse.state.y < 192)
+					renderer.fillRectangle(vec4(window.width - 200, 128, 200, 64), vec4(1, 1, 1, 0.2f));
+			}
+
+			float x = window.width - 190;
+			renderer.modelview.push();
+			renderer.modelview.top *= mat4.translation(x, 48, 0) * mat4.scaling(768, 512, 1);
+			text.text = "Save"d;
+			text.draw(renderer);
+			renderer.modelview.pop();
+			renderer.modelview.push();
+			renderer.modelview.top *= mat4.translation(x, 112, 0) * mat4.scaling(768, 512, 1);
+			text.text = "Test"d;
+			text.draw(renderer);
+			renderer.modelview.pop();
+			renderer.modelview.push();
+			renderer.modelview.top *= mat4.translation(x, 176, 0) * mat4.scaling(768, 512, 1);
+			text.text = "Exit"d;
+			text.draw(renderer);
+			renderer.modelview.pop();
+			renderer.modelview.pop();
+		}
 
 		renderer.bind3D();
 		renderer.end(window);
@@ -332,6 +431,37 @@ public:
 		return track;
 	}
 
+	void saveTrack()
+	{
+		saving = false;
+		firstSave = false;
+		isDirty = false;
+		if (!file)
+		{
+			int num;
+			do
+			{
+				file = "res/maps/" ~ name.replaceAll(invalid, "_") ~ (num ? num.to!string : "") ~ ".map";
+				num++;
+			}
+			while (file.exists);
+		}
+		ubyte[] data;
+		data ~= cast(ubyte) name.length;
+		data ~= cast(ubyte[]) name;
+		data ~= (cast(uint) controlPoints.length).nativeToBigEndian;
+		foreach (ctrl; controlPoints)
+		{
+			data ~= ctrl.x.nativeToBigEndian;
+			data ~= ctrl.y.nativeToBigEndian;
+			data ~= ctrl.z.nativeToBigEndian;
+		}
+		write(file, data);
+	}
+
+	string name = "";
+	string file = null;
+	bool firstSave = true;
 private:
 	Renderer renderer;
 	View window;
@@ -344,6 +474,8 @@ private:
 	bool mouseDown, mouseWheelDown, rightMouseDown;
 	bool mouseWasDown, mouseWheelWasDown, rightMouseWasDown;
 	bool gWasDown, sWasDown, wWasDown, eWasDown, delWasDown;
+	bool saving, exiting;
+	bool isDirty;
 	EditMode mode;
 	int zoom = 100;
 	vec2 offset = vec2(0);
