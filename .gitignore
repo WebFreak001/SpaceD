@@ -9,3 +9,4 @@ dub.selections.json
 /linuxjam
 *.blend1
 .savegame
+bin/
