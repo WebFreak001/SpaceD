@@ -29,6 +29,10 @@ vec4 compute(vec4 rect, Align alignment, float width, float height)
 		return vec4(width - rect.z - rect.x, rect.y, rect.zw);
 	case BottomRight:
 		return vec4(width - rect.z - rect.x, height - rect.a - rect.y, rect.zw);
+	case TopCenter:
+		return vec4(rect.x + width * 0.5f, rect.y, rect.zw);
+	case BottomCenter:
+		return vec4(rect.x + width * 0.5f, height - rect.a - rect.y, rect.zw);
 	}
 }
 
@@ -46,6 +50,18 @@ public:
 		buttonShape.addPositionArray([vec2(0.05f, 0), vec2(1, 0), vec2(0.95f, 1),
 				vec2(0.95f, 1), vec2(0.05f, 0), vec2(0, 1)]);
 		buttonShape.generate();
+
+		chevronL = new GL3ShapePosition();
+		chevronL.addPositionArray([vec2(0.5f, 0), vec2(1, 0), vec2(0.5f, 0.5f),
+				vec2(0.5f, 0.5f), vec2(0.5f, 0), vec2(0, 0.5f), vec2(0, 0.5f),
+				vec2(0.5f, 0.5f), vec2(1, 1), vec2(0, 0.5f), vec2(1, 1), vec2(0.5f, 1)]);
+		chevronL.generate();
+
+		chevronR = new GL3ShapePosition();
+		chevronR.addPositionArray([vec2(0, 0), vec2(0.5f, 0), vec2(1, 0.5f),
+				vec2(1, 0.5f), vec2(0, 0), vec2(0.5f, 0.5f), vec2(0.5f, 0.5f), vec2(1,
+					0.5f), vec2(0.5f, 1), vec2(0.5f, 0.5f), vec2(0.5f, 1), vec2(0, 1)]);
+		chevronR.generate();
 
 		window.onKeyboard ~= &keyboardEvent;
 	}
@@ -160,10 +176,15 @@ public:
 						renderer.modelview.push();
 						renderer.modelview.top *= mat4.translation(vec3(rect.xy,
 								0)) * mat4.scaling(rect.z, rect.w, 1);
+						auto shape = buttonShape;
+						if (button.text == "<"d)
+							shape = chevronL;
+						if (button.text == ">"d)
+							shape = chevronR;
 						if (focused)
-							renderer.fillShape(buttonShape, vec2(0), (button.bg + vec4(0.5f, 0.5f, 1, 1)) * 0.5f);
+							renderer.fillShape(shape, vec2(0), (button.bg + vec4(0.5f, 0.5f, 1, 1)) * 0.5f);
 						else
-							renderer.fillShape(buttonShape, vec2(0), button.bg);
+							renderer.fillShape(shape, vec2(0), button.bg);
 						renderer.modelview.pop();
 						if (act)
 						{
@@ -180,14 +201,20 @@ public:
 							SceneSwitchAction sceneAction;
 							if (entity.fetch(sceneAction))
 								sceneManager.setScene(sceneAction.scene);
+							DelegateAction delegateAction;
+							if (entity.fetch(delegateAction))
+								delegateAction.del();
 						}
-						text.text = button.text;
-						renderer.modelview.push();
-						renderer.modelview.top *= mat4.translation(vec3(rect.x + (rect.z - text.textWidth * 768) * 0.5,
-								rect.y + text.lineHeight * 512 + (rect.a - text.lineHeight * 512) * 0.5, 0)) * mat4.scaling(768,
-								512, 1);
-						text.draw(renderer, button.fg);
-						renderer.modelview.pop();
+						if (button.text != "<"d && button.text != ">"d)
+						{
+							text.text = button.text;
+							renderer.modelview.push();
+							renderer.modelview.top *= mat4.translation(vec3(rect.x + (rect.z - text.textWidth * 768) * 0.5,
+									rect.y + text.lineHeight * 512 + (rect.a - text.lineHeight * 512) * 0.5, 0)) * mat4.scaling(768,
+									512, 1);
+							text.draw(renderer, button.fg);
+							renderer.modelview.pop();
+						}
 					}
 				}
 				{
@@ -250,7 +277,7 @@ private:
 	View window;
 	Text text;
 	int curTabIndex = -1;
-	Shape buttonShape;
+	Shape buttonShape, chevronL, chevronR;
 	Key lastKey = cast(Key) 0;
 
 	MouseState prevMouse;

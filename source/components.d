@@ -140,7 +140,9 @@ enum Align : ubyte
 	TopLeft,
 	BottomLeft,
 	TopRight,
-	BottomRight
+	BottomRight,
+	TopCenter,
+	BottomCenter
 }
 
 struct Button
@@ -224,6 +226,14 @@ struct BuyAction
 struct KeybindAction
 {
 	string name, field;
+
+	mixin ComponentBase;
+}
+
+struct DelegateAction
+{
+	void delegate() del;
+	bool _;
 
 	mixin ComponentBase;
 }
