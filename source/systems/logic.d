@@ -254,7 +254,7 @@ public:
 									{
 										if (ai && !ai.nextWaypoint.isFinite)
 										{
-											ai.trackIndex = (ai.trackIndex + 2) % track.innerRing.length;
+											ai.trackIndex = (ai.trackIndex + 1) % track.innerRing.length;
 											ai.nextWaypoint = (
 													track.innerRing[ai.trackIndex] * 3 + track.outerRing[ai.trackIndex])
 												* 0.25f;
