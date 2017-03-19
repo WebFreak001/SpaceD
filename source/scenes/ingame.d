@@ -11,6 +11,7 @@ import std.random;
 
 import app;
 import components;
+import globstate;
 import particles;
 import scenemanager;
 import shaderpool;
@@ -150,7 +151,7 @@ class IngameScene : IScene
 			mixin(createEntity!("Player", q{
 				EntityDisplay: vehicleMesh, shader, vehicle1, mat4.identity
 				Transformation: mat4.translation(0, 0, 0)
-				PlayerControls: Key.Up, Key.Left, Key.Down, Key.Right, Key.RShift, Key.RCtrl
+				PlayerControls: settings.controls
 				VehiclePhysics: track.innerRing[0] * 0.4f + track.outerRing[0] * 0.6f, PI * 0.5f
 				ParticleSpawner:
 			}));

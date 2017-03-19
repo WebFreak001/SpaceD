@@ -10,3 +10,4 @@ dub.selections.json
 *.blend1
 .savegame
 bin/
+/config.json

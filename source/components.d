@@ -27,7 +27,18 @@ struct EntityDisplay
 
 struct PlayerControls
 {
-	Key accelerate, steerLeft, decelerate, steerRight, boost, lookBack;
+	struct ControlScheme
+	{
+		Key accelerate = Key.Up;
+		Key steerLeft = Key.Left;
+		Key decelerate = Key.Down;
+		Key steerRight = Key.Right;
+		Key boost = Key.RShift;
+		Key lookBack = Key.RCtrl;
+	}
+
+	ControlScheme scheme;
+	alias scheme this;
 
 	mixin ComponentBase;
 }

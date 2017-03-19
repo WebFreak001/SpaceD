@@ -71,6 +71,11 @@ void main()
 		renderer.setupDepthTest(DepthFunc.Less);
 
 		globalState.load();
+		scope (exit)
+			globalState.save();
+		settings = PlayerSettings.load();
+		scope (exit)
+			settings.save();
 
 		SceneManager sceneManager = new SceneManager(world);
 

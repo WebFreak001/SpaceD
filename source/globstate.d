@@ -4,6 +4,11 @@ import std.file;
 import std.math;
 import std.bitmanip;
 import std.digest.crc;
+import std.json;
+import std.conv;
+
+import avocado.sdl2;
+import components;
 
 enum SymmetricKey = "lol security";
 
@@ -76,3 +81,44 @@ struct GlobalState
 }
 
 __gshared GlobalState globalState;
+
+struct PlayerSettings
+{
+	PlayerControls.ControlScheme controls;
+
+	void save()
+	{
+		//dfmt off
+		write("config.json", JSONValue([
+			"controls": JSONValue([
+				"accelerate": JSONValue(controls.accelerate.to!string),
+				"steerLeft": JSONValue(controls.steerLeft.to!string),
+				"decelerate": JSONValue(controls.decelerate.to!string),
+				"steerRight": JSONValue(controls.steerRight.to!string),
+				"boost": JSONValue(controls.boost.to!string),
+				"lookBack": JSONValue(controls.lookBack.to!string)
+			])
+		]).toPrettyString);
+		//dfmt on
+	}
+
+	static PlayerSettings load()
+	{
+		if (exists("config.json"))
+		{
+			auto json = parseJSON(readText("config.json"));
+			PlayerSettings set;
+			set.controls.accelerate = json["controls"]["accelerate"].str.to!Key;
+			set.controls.steerLeft = json["controls"]["steerLeft"].str.to!Key;
+			set.controls.decelerate = json["controls"]["decelerate"].str.to!Key;
+			set.controls.steerRight = json["controls"]["steerRight"].str.to!Key;
+			set.controls.boost = json["controls"]["boost"].str.to!Key;
+			set.controls.lookBack = json["controls"]["lookBack"].str.to!Key;
+			return set;
+		}
+		else
+			return PlayerSettings.init;
+	}
+}
+
+__gshared PlayerSettings settings;
