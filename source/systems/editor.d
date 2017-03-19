@@ -33,6 +33,13 @@ enum EditMode
 	width
 }
 
+enum LockAxis : ubyte
+{
+	None,
+	X,
+	Y
+}
+
 class EditorSystem : ISystem
 {
 public:
@@ -154,6 +161,7 @@ public:
 
 	void grab()
 	{
+		lockAxis = LockAxis.None;
 		mode = EditMode.grab;
 		relativeTo = lastMouse;
 	}
@@ -195,6 +203,10 @@ public:
 				extrude();
 			else if (Keyboard.state.isKeyPressed(Key.Delete) && !delWasDown)
 				del();
+			else if (Keyboard.state.isKeyPressed(Key.X) && !xWasDown)
+				lockAxis = lockAxis == LockAxis.X ? LockAxis.None : LockAxis.X;
+			else if (Keyboard.state.isKeyPressed(Key.Y) && !yWasDown)
+				lockAxis = lockAxis == LockAxis.Y ? LockAxis.None : LockAxis.Y;
 			if (!rightMouseDown && rightMouseWasDown)
 				mode = EditMode.select;
 			if (!mouseDown && mouseWasDown)
@@ -259,6 +271,10 @@ public:
 							modPos += lastMouse - relativeTo;
 						if (mode == EditMode.width && vertex.selected)
 							modWidth += (lastMouse - relativeTo).length * 0.01f - 1.0f;
+						if (lockAxis == LockAxis.X)
+							modPos.y = vertex.pos.y;
+						if (lockAxis == LockAxis.Y)
+							modPos.x = vertex.pos.x;
 						entityNum++;
 						controlPoints ~= vec4(modPos, modWidth, vertex.selected ? 1 : 0);
 						if (applyEdit)
@@ -345,6 +361,8 @@ public:
 		wWasDown = Keyboard.state.isKeyPressed(Key.W);
 		eWasDown = Keyboard.state.isKeyPressed(Key.E);
 		delWasDown = Keyboard.state.isKeyPressed(Key.Delete);
+		xWasDown = Keyboard.state.isKeyPressed(Key.X);
+		yWasDown = Keyboard.state.isKeyPressed(Key.Y);
 		resetRelativeTo = false;
 		extend = false;
 		deleteSelected = false;
@@ -522,10 +540,11 @@ private:
 	Mesh test;
 	bool mouseDown, mouseWheelDown, rightMouseDown;
 	bool mouseWasDown, mouseWheelWasDown, rightMouseWasDown;
-	bool gWasDown, wWasDown, eWasDown, delWasDown;
+	bool gWasDown, wWasDown, eWasDown, delWasDown, xWasDown, yWasDown;
 	bool saving, exiting;
 	bool resetRelativeTo, extend, deleteSelected;
 	bool isDirty;
+	LockAxis lockAxis = LockAxis.None;
 	EditMode mode;
 	int zoom = 100;
 	vec2 offset = vec2(0);
