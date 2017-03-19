@@ -92,7 +92,7 @@ class LeaderboardScene : IScene
 			cTime.text = msecs.makeTime;
 			cTime.pos = vec2(190, ScoreboardY + (playerRanking - 1) * 50);
 			bestTime.get!GUIText.text = "PB: "d ~ globalState.bestTime.makeTime;
-			if (globalState.bestTime == 0 || msecs < globalState.bestTime)
+			if ((globalState.bestTime == 0 || msecs < globalState.bestTime) && game.isGenerated)
 			{
 				globalState.bestTime = msecs;
 				pbTag.get!GUIRectangle.rect = vec4(335, ScoreboardY + (playerRanking - 1) * 50 - 32, 56, 32);

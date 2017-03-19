@@ -133,6 +133,7 @@ class IngameScene : IScene
 		}
 		else
 			track = generateTrack;
+		isGenerated = track.isRandom;
 		track.generateOuterAndMeshes();
 		mixin(createEntity!("Track", q{
 			EntityDisplay: track.roadMesh, shader, street, mat4.identity
@@ -219,6 +220,7 @@ class IngameScene : IScene
 	{
 	}
 
+	bool isGenerated;
 	ParticleSystem!(8192) particles;
 	Texture vehicle1, poleTex, street, border;
 	Mesh vehicleMesh, poleMesh;
