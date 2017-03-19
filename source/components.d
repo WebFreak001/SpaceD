@@ -220,3 +220,10 @@ struct BuyAction
 
 	mixin ComponentBase;
 }
+
+struct KeybindAction
+{
+	string name, field;
+
+	mixin ComponentBase;
+}

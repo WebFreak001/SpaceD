@@ -46,6 +46,14 @@ public:
 		buttonShape.addPositionArray([vec2(0.05f, 0), vec2(1, 0), vec2(0.95f, 1),
 				vec2(0.95f, 1), vec2(0.05f, 0), vec2(0, 1)]);
 		buttonShape.generate();
+
+		window.onKeyboard ~= &keyboardEvent;
+	}
+
+	void keyboardEvent(KeyboardEvent ev)
+	{
+		if (ev.type == SDL_KEYDOWN)
+			lastKey = cast(Key) ev.keysym.sym;
 	}
 
 	final void update(World world)
@@ -99,6 +107,42 @@ public:
 							curTabIndex = -1;
 							if (!Mouse.state.isButtonPressed(1) && prevMouse.isButtonPressed(1))
 								act = true;
+							{
+								KeybindAction kbAction;
+								if (entity.fetch(kbAction) && lastKey != cast(Key) 0)
+								{
+									button.text = kbAction.name.to!dstring ~ ": "d ~ lastKey.to!dstring;
+									switch (kbAction.field)
+									{
+									case "accelerate":
+										settings.controls.accelerate = lastKey;
+										settings.save();
+										break;
+									case "steerLeft":
+										settings.controls.steerLeft = lastKey;
+										settings.save();
+										break;
+									case "decelerate":
+										settings.controls.decelerate = lastKey;
+										settings.save();
+										break;
+									case "steerRight":
+										settings.controls.steerRight = lastKey;
+										settings.save();
+										break;
+									case "boost":
+										settings.controls.boost = lastKey;
+										settings.save();
+										break;
+									case "lookBack":
+										settings.controls.lookBack = lastKey;
+										settings.save();
+										break;
+									default:
+										assert(0);
+									}
+								}
+							}
 						}
 						TabFocus tabFocus;
 						if (entity.fetch(tabFocus))
@@ -193,6 +237,8 @@ public:
 		prevMouse = (*Mouse.state);
 		prevKeyboard = KeyboardState(Keyboard.state.keys.dup);
 
+		lastKey = cast(Key) 0;
+
 		renderer.modelview.pop();
 		renderer.bind3D();
 		renderer.end(window);
@@ -205,6 +251,7 @@ private:
 	Text text;
 	int curTabIndex = -1;
 	Shape buttonShape;
+	Key lastKey = cast(Key) 0;
 
 	MouseState prevMouse;
 	KeyboardState prevKeyboard;

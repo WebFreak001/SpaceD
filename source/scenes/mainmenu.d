@@ -52,22 +52,27 @@ class MainMenuScene : IScene
 			GUIRectangle: logo, vec4(32, 32, 320, 89), Align.TopRight
 		}));
 		mixin(createEntity!("Play Button", q{
-			Button: "Play"d, vec4(0.69f, 0.224f, 0.192f, 1), vec4(1), vec4(64, 32, 300, 64), Align.TopLeft
+			Button: "Play"d, vec4(0.69f, 0.224f, 0.192f, 1), vec4(1), vec4(80, 32, 300, 64), Align.TopLeft
 			TabFocus: 0
 			SceneSwitchAction: "ingame"
 		}));
 		mixin(createEntity!("Shop Button", q{
-			Button: "Shop"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(48, 112, 300, 64), Align.TopLeft
+			Button: "Shop"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(64, 112, 300, 64), Align.TopLeft
 			TabFocus: 1
 			SceneSwitchAction: "shop"
 		}));
+		mixin(createEntity!("Settings Button", q{
+			Button: "Settings"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(48, 192, 300, 64), Align.TopLeft
+			TabFocus: 2
+			SceneSwitchAction: "settings"
+		}));
 		mixin(createEntity!("Exit Button", q{
 			Button: "Exit"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(16, 16, 240, 64), Align.BottomLeft
-			TabFocus: 2
+			TabFocus: 3
 			SceneSwitchAction: "crash"
 		}));
 		moneyCounter = mixin(createEntity!("Money Counter", q{
-			GUIText: "Money: 0ĸ"d, vec2(64, 176 + 24), vec2(0.75f, 0.75f), vec4(1, 1, 1, 0.5f), Align.TopLeft
+			GUIText: "Money: 0ĸ"d, vec2(16, 16), vec2(1, 1), vec4(1), Align.BottomRight
 		}, "world", true));
 	}
 
@@ -147,4 +152,58 @@ class ShopScene : IScene
 	Entity boostBuy, controlBuy;
 	Entity boostUpgrades, controlUpgrades;
 	Entity moneyCounter;
+}
+
+class SettingsScene : IScene
+{
+	override void load(SceneManager sceneManager, Renderer renderer, View window,
+			ResourceManager resources, ShaderPool shaders)
+	{
+		auto textVert = shaders.load(ShaderType.Vertex, "shaders/text.vert");
+		auto textFrag = shaders.load(ShaderType.Fragment, "shaders/text.frag");
+
+		Shader textShader = new Shader(renderer, textVert, textFrag);
+		Font font = resources.load!Font("fonts/roboto.fnt", resources, "fonts/");
+
+		world.addSystem!MenuSystem(renderer, window, font, textShader, sceneManager);
+
+		mixin(createEntity!("Keybind", q{
+			Button: "Accelerate: "d ~ settings.controls.accelerate.to!dstring, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(16, 16, 300, 48)
+			KeybindAction: "Accelerate", "accelerate"
+		}));
+		mixin(createEntity!("Keybind", q{
+			Button: "Steer Left: "d ~ settings.controls.steerLeft.to!dstring, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(16, 70, 300, 48)
+			KeybindAction: "Steer Left", "steerLeft"
+		}));
+		mixin(createEntity!("Keybind", q{
+			Button: "Decelerate: "d ~ settings.controls.decelerate.to!dstring, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(16, 124, 300, 48)
+			KeybindAction: "Decelerate", "decelerate"
+		}));
+		mixin(createEntity!("Keybind", q{
+			Button: "Steer Right: "d ~ settings.controls.steerRight.to!dstring, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(16, 178, 300, 48)
+			KeybindAction: "Steer Right", "steerRight"
+		}));
+		mixin(createEntity!("Keybind", q{
+			Button: "Boost: "d ~ settings.controls.boost.to!dstring, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(16, 232, 300, 48)
+			KeybindAction: "Boost", "boost"
+		}));
+		mixin(createEntity!("Keybind", q{
+			Button: "Look Back: "d ~ settings.controls.lookBack.to!dstring, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(16, 286, 300, 48)
+			KeybindAction: "Look Back", "lookBack"
+		}));
+
+		mixin(createEntity!("Back Button", q{
+			Button: "Back"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(16, 16, 240, 64), Align.BottomLeft
+			TabFocus: 0
+			SceneSwitchAction: "main"
+		}));
+	}
+
+	override void preEnter(IScene prev)
+	{
+	}
+
+	override void postExit(IScene next)
+	{
+	}
 }

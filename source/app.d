@@ -87,6 +87,9 @@ void main()
 		auto shop = new ShopScene();
 		shop.load(sceneManager, renderer, window, resources, shaders);
 		sceneManager.register(shop, "shop");
+		auto settings = new SettingsScene();
+		settings.load(sceneManager, renderer, window, resources, shaders);
+		sceneManager.register(settings, "settings");
 
 		auto leaderboards = new LeaderboardScene();
 		leaderboards.load(sceneManager, renderer, window, resources, shaders);
