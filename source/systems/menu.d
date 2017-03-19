@@ -254,11 +254,14 @@ public:
 			}
 		}
 
-		if ((Keyboard.state.isKeyPressed(Key.Tab)
-				&& !prevKeyboard.isKeyPressed(Key.Tab))
-				|| (Keyboard.state.isKeyPressed(Key.Down) && !prevKeyboard.isKeyPressed(Key.Down)))
+		bool tab = Keyboard.state.isKeyPressed(Key.Tab) && !prevKeyboard.isKeyPressed(Key.Tab);
+		bool shiftDown = Keyboard.state.isKeyPressed(Key.LShift)
+			|| Keyboard.state.isKeyPressed(Key.RShift);
+		if ((tab && !shiftDown) || (Keyboard.state.isKeyPressed(Key.Down)
+				&& !prevKeyboard.isKeyPressed(Key.Down)))
 			curTabIndex = (curTabIndex + 1) % (maxTabIndex + 1);
-		if (Keyboard.state.isKeyPressed(Key.Up) && !prevKeyboard.isKeyPressed(Key.Up))
+		if ((tab && shiftDown) || (Keyboard.state.isKeyPressed(Key.Up)
+				&& !prevKeyboard.isKeyPressed(Key.Up)))
 			curTabIndex = (curTabIndex + maxTabIndex) % (maxTabIndex + 1);
 
 		prevMouse = (*Mouse.state);
