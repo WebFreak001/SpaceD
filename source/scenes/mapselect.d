@@ -18,6 +18,7 @@ import std.conv;
 import std.file;
 import std.path;
 import std.uuid;
+import std.stdio : stderr;
 
 import asdf;
 import api;
@@ -141,20 +142,29 @@ class MapselectScene : IScene
 
 	void addMaps(int page)
 	{
-		auto maps = deserialize!(PublicMap[])(cast(string) getContent(APIEndPoint ~ "maps",
-				queryParams("page", page)));
-		foreach (map; maps)
+		try
 		{
-			Track track;
-			track.name = map.uploader ~ " - " ~ map.name;
-			track.id = UUID(map.id).data;
-			track.toDownload = true;
-			choices ~= track;
+			auto maps = deserialize!(PublicMap[])(cast(string) getContent(APIEndPoint ~ "maps",
+					queryParams("page", page)));
+			foreach (map; maps)
+			{
+				Track track;
+				track.name = map.uploader ~ " - " ~ map.name;
+				track.id = UUID(map.id).data;
+				track.toDownload = true;
+				choices ~= track;
+			}
+			if (maps.length == page * 100)
+				dots.get!Dots.numDots = page * 100 + 1;
+			else
+				dots.get!Dots.numDots = page * 100 + cast(int) maps.length;
 		}
-		if (maps.length == page * 100)
-			dots.get!Dots.numDots = page * 100 + 1;
-		else
-			dots.get!Dots.numDots = page * 100 + cast(int) maps.length;
+		catch (Exception e)
+		{
+			stderr.writeln("Error while fetching maps");
+			stderr.writeln(e);
+			sceneManager.setScene("error");
+		}
 	}
 
 	override void preEnter(IScene prev)
