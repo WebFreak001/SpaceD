@@ -121,10 +121,10 @@ class MapeditSelectScene : IScene
 			return;
 
 		uploadIndex = index;
-		mixin(createEntity!("Upload Dialog", q{
-			Dialog: "Upload map "d ~ files[index].baseName.to!dstring ~ " to the Internet?"d, "Upload"d, "Cancel"d
+		uploadDialog = mixin(createEntity!("Upload Dialog", q{
+			Dialog: "Upload map "d ~ files[index].baseName.to!dstring ~ " to the Internet?"d, "Upload"d, "Cancel"d, "Author Name: "d, "Anon"
 			DelegateAction: &actuallyUpload
-		}));
+		}, "world", true));
 		sceneManager.setScene("mapedit");
 	}
 
@@ -159,11 +159,12 @@ class MapeditSelectScene : IScene
 		JSONValue[] points;
 		foreach (i, ref v; map.innerRing)
 			points ~= JSONValue([JSONValue(v.x), JSONValue(v.y), JSONValue(map.widths[i])]);
+		string uploader = uploadDialog.get!Dialog.value;
 		//dfmt off
 		JSONValue data = JSONValue([
 			"mapid": JSONValue(UUID(map.id).toString),
 			"name": JSONValue(map.name),
-			"uploader": JSONValue("Anon"),
+			"uploader": JSONValue(uploader),
 			"controlPoints": JSONValue(points)
 		]);
 		//dfmt on
@@ -241,7 +242,7 @@ class MapeditSelectScene : IScene
 	}
 
 	SceneManager sceneManager;
-	Entity mapTitle, dots, preview, editBtn, deleteBtn, uploadBtn;
+	Entity mapTitle, dots, preview, editBtn, deleteBtn, uploadBtn, uploadDialog;
 	string[] files;
 	Track[] choices;
 	size_t index, deleteIndex, uploadIndex;

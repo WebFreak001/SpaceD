@@ -54,6 +54,7 @@ public:
 
 		window.onKeyboard ~= &keyboardEvent;
 		window.onMouseWheel ~= &mouseWheel;
+		window.onTextInput ~= &textInput;
 	}
 
 	void keyboardEvent(KeyboardEvent ev)
@@ -65,6 +66,11 @@ public:
 	void mouseWheel(MouseWheelEvent ev)
 	{
 		wheel += ev.y;
+	}
+
+	void textInput(TextInputEvent ev)
+	{
+		typed = ev.text;
 	}
 
 	final void update(World world)
@@ -221,9 +227,22 @@ public:
 						renderer.modelview.push();
 						text.text = dialog.title;
 						renderer.modelview.top *= mat4.translation(window.width * 0.5f - 190,
-								window.height * 0.5f - 10, 0) * mat4.scaling(768 * 0.5f, 512 * 0.5f, 1);
+								window.height * 0.5f - 20, 0) * mat4.scaling(768 * 0.5f, 512 * 0.5f, 1);
 						text.draw(renderer);
 						renderer.modelview.pop();
+						if (dialog.prompt.length)
+						{
+							renderer.modelview.push();
+							dialog.value ~= typed;
+							if (Keyboard.state.isKeyPressed(Key.Backspace)
+									&& !prevKeyboard.isKeyPressed(Key.Backspace) && dialog.value.length)
+								dialog.value.length--;
+							text.text = dialog.prompt ~ dialog.value.to!dstring;
+							renderer.modelview.top *= mat4.translation(window.width * 0.5f - 190,
+									window.height * 0.5f, 0) * mat4.scaling(768 * 0.5f, 512 * 0.5f, 1);
+							text.draw(renderer);
+							renderer.modelview.pop();
+						}
 						if (Mouse.state.x >= rect.x && Mouse.state.x <= rect.x + rect.z
 								&& Mouse.state.y > window.height * 0.5f && Mouse.state.y <= rect.y + rect.a)
 						{
@@ -354,6 +373,8 @@ public:
 		prevMouse = (*Mouse.state);
 		prevKeyboard = KeyboardState(Keyboard.state.keys.dup);
 
+		typed = "";
+
 		lastKey = cast(Key) 0;
 		wheel = 0;
 
@@ -371,6 +392,7 @@ private:
 	Shape buttonShape, chevronL, chevronR, dot;
 	Key lastKey = cast(Key) 0;
 	int wheel;
+	string typed;
 
 	MouseState prevMouse;
 	KeyboardState prevKeyboard;

@@ -182,6 +182,8 @@ struct Button
 struct Dialog
 {
 	dstring title, confirm, abort;
+	dstring prompt;
+	string value;
 
 	mixin ComponentBase;
 }
