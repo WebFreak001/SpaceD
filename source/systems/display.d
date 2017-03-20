@@ -137,10 +137,13 @@ public:
 				{
 					EntityDisplay display;
 					Transformation transform;
+					VehiclePhysics phys;
 					if (entity.fetch(transform, display))
 					{
 						renderer.modelview.push();
 						renderer.modelview.top *= transform.transform * display.matrix;
+						if (entity.fetch(phys))
+							renderer.modelview.top *= mat4.zrotation(-phys.angularVelocity * 0.3f);
 						display.texture.bind(renderer, 0);
 						renderer.bind(display.shader);
 						renderer.drawMesh(display.mesh);
