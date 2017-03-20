@@ -91,11 +91,20 @@ class LeaderboardScene : IScene
 			auto cTime = curTime.get!GUIText;
 			cTime.text = msecs.makeTime;
 			cTime.pos = vec2(190, ScoreboardY + (playerRanking - 1) * 50);
-			bestTime.get!GUIText.text = "PB: "d ~ globalState.bestTime.makeTime;
-			if ((globalState.bestTime == 0 || msecs < globalState.bestTime) && game.isGenerated)
+			ulong best = game.track.isRandom ? globalState.bestTime : pbStore.pbFor(game.track.id);
+			bestTime.get!GUIText.text = "PB: "d ~ best.makeTime;
+			if (best == 0 || msecs < best)
 			{
-				globalState.bestTime = msecs;
-				pbTag.get!GUIRectangle.rect = vec4(335, ScoreboardY + (playerRanking - 1) * 50 - 32, 56, 32);
+				bool success = game.track.isRandom;
+				if (game.track.isRandom)
+					globalState.bestTime = msecs;
+				else
+					success = pbStore.setPB(game.track.id, msecs);
+				if (success)
+					pbTag.get!GUIRectangle.rect = vec4(335, ScoreboardY + (playerRanking - 1) * 50 - 32,
+							56, 32);
+				else
+					pbTag.get!GUIRectangle.rect = vec4(-100, -100, 56, 32);
 			}
 			else
 				pbTag.get!GUIRectangle.rect = vec4(-100, -100, 56, 32);

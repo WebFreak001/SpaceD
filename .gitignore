@@ -11,3 +11,4 @@ dub.selections.json
 .savegame
 bin/
 /config.json
+.pbstore

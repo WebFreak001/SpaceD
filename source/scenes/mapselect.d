@@ -101,7 +101,13 @@ class MapselectScene : IScene
 		if (choices[index].isRandom)
 			pbDisplay.get!GUIText.text = "PB: "d ~ globalState.bestTime.makeTime;
 		else
-			pbDisplay.get!GUIText.text = "PB: n/a"d;
+		{
+			ulong ms = pbStore.pbFor(choices[index].id);
+			if (ms != 0)
+				pbDisplay.get!GUIText.text = "PB: "d ~ ms.makeTime;
+			else
+				pbDisplay.get!GUIText.text = "PB: n/a"d;
+		}
 		choices[index].generateOuterAndMeshes();
 		preview.get!GUI3D.mesh = choices[index].roadMesh;
 	}

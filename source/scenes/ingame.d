@@ -120,7 +120,6 @@ class IngameScene : IScene
 					info.time = -3;
 			}
 		}
-		Track track;
 		if (cast(MapselectScene) prev)
 		{
 			auto mapSel = (cast(MapselectScene) prev);
@@ -133,7 +132,6 @@ class IngameScene : IScene
 		}
 		else
 			track = generateTrack;
-		isGenerated = track.isRandom;
 		track.generateOuterAndMeshes();
 		mixin(createEntity!("Track", q{
 			EntityDisplay: track.roadMesh, shader, street, mat4.identity
@@ -220,7 +218,7 @@ class IngameScene : IScene
 	{
 	}
 
-	bool isGenerated;
+	Track track;
 	ParticleSystem!(8192) particles;
 	Texture vehicle1, poleTex, street, border;
 	Mesh vehicleMesh, poleMesh;

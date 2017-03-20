@@ -94,10 +94,28 @@ struct PBStore
 
 	ulong pbFor(ubyte[16] map)
 	{
+		if (map == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+			return 0;
 		foreach (entry; entries)
 			if (entry.mapID == map)
 				return entry.msecs;
 		return 0;
+	}
+
+	bool setPB(ubyte[16] map, ulong msecs)
+	{
+		if (map == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+			return false;
+		foreach (ref entry; entries)
+			if (entry.mapID == map)
+			{
+				entry.msecs = msecs;
+				save();
+				return true;
+			}
+		entries ~= Entry(msecs, map);
+		save();
+			return true;
 	}
 
 	void save()
