@@ -159,22 +159,23 @@ public:
 
 								if (canParticle)
 								{
+									float tiltApprox = sin(-physics.angularVelocity * 0.3f) * 1.5f;
 									particles.toSpawn ~= ParticleSpawner.Data(vec3(corners[4].x,
-											0.5f, corners[4].y), 1, ParticleInfo(vec4(1, 1, 1, 1), 4,
-											-0.5f, vec3(physics.linearVelocity.x, 0,
+											0.5f - tiltApprox, corners[4].y), 1, ParticleInfo(vec4(1, 1, 1,
+											1), 4, -0.5f, vec3(physics.linearVelocity.x, 0,
 											physics.linearVelocity.y) * 0.25f, 0.5f));
 									particles.toSpawn ~= ParticleSpawner.Data(vec3(corners[5].x,
-											0.5f, corners[5].y), 1, ParticleInfo(vec4(1, 1, 1, 1), 4,
-											-0.5f, vec3(physics.linearVelocity.x, 0,
+											0.5f + tiltApprox, corners[5].y), 1, ParticleInfo(vec4(1, 1, 1,
+											1), 4, -0.5f, vec3(physics.linearVelocity.x, 0,
 											physics.linearVelocity.y) * 0.25f, 0.5f));
 									if (shouldBoost)
 									{
 										particles.toSpawn ~= ParticleSpawner.Data(vec3(corners[6].x,
-												0.5f, corners[6].y), 1, ParticleInfo(vec4(1, 0.5f, 0.5f,
+												0.5f - tiltApprox, corners[6].y), 1, ParticleInfo(vec4(1, 0.5f, 0.5f,
 												1), 4, -0.5f, vec3(physics.linearVelocity.x, 0,
 												physics.linearVelocity.y) * 0.5f, 0.5f));
 										particles.toSpawn ~= ParticleSpawner.Data(vec3(corners[7].x,
-												0.5f, corners[7].y), 1, ParticleInfo(vec4(1, 0.5f, 0.5f,
+												0.5f + tiltApprox, corners[7].y), 1, ParticleInfo(vec4(1, 0.5f, 0.5f,
 												1), 4, -0.5f, vec3(physics.linearVelocity.x, 0,
 												physics.linearVelocity.y) * 0.5f, 0.5f));
 									}
