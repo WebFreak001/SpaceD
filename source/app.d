@@ -27,6 +27,8 @@ alias Shape = GL3ShapePosition;
 alias Mesh = GL3MeshIndexPositionTextureNormal;
 alias Font = BMFont!(Texture, ResourceManager);
 
+enum APIEndPoint = "http://localhost:3000/";
+
 Mesh convertAssimpMesh(AssimpMeshData from)
 {
 	auto mesh = new GL3MeshIndexPositionTextureNormal();
@@ -99,6 +101,29 @@ void main(string[] args)
 			renderer.resize(width, height);
 		}
 
+		Key[16] lastPresses;
+		ubyte lastPressIndex;
+		window.onKeyboard ~= (ev) {
+			if (ev.type == SDL_KEYUP)
+			{
+				lastPresses[lastPressIndex] = cast(Key) ev.keysym.sym;
+				//dfmt off
+				if (lastPresses[(lastPressIndex + $ - 9) % lastPresses.length] == Key.Up
+					&& lastPresses[(lastPressIndex + $ - 8) % lastPresses.length] == Key.Up
+					&& lastPresses[(lastPressIndex + $ - 7) % lastPresses.length] == Key.Down
+					&& lastPresses[(lastPressIndex + $ - 6) % lastPresses.length] == Key.Down
+					&& lastPresses[(lastPressIndex + $ - 5) % lastPresses.length] == Key.Left
+					&& lastPresses[(lastPressIndex + $ - 4) % lastPresses.length] == Key.Right
+					&& lastPresses[(lastPressIndex + $ - 3) % lastPresses.length] == Key.Left
+					&& lastPresses[(lastPressIndex + $ - 2) % lastPresses.length] == Key.Right
+					&& lastPresses[(lastPressIndex + $ - 1) % lastPresses.length] == Key.B
+					&& lastPresses[lastPressIndex] == Key.A)
+					cheatsActive = true;
+				//dfmt on
+				lastPressIndex = (lastPressIndex + 1) % lastPresses.length;
+			}
+		};
+
 		window.onResized ~= &onResized;
 		onResized(window.width, window.height);
 
@@ -116,6 +141,9 @@ void main(string[] args)
 		pbStore.load();
 		scope (exit)
 			pbStore.save();
+		tokenStore.load();
+		scope (exit)
+			tokenStore.save();
 		settings = PlayerSettings.load();
 		scope (exit)
 			settings.save();
@@ -139,10 +167,14 @@ void main(string[] args)
 		auto settings = new SettingsScene();
 		settings.load(sceneManager, renderer, window, resources, shaders);
 		sceneManager.register(settings, "settings");
+		auto error = new ErrorScene();
+		error.load(sceneManager, renderer, window, resources, shaders);
+		sceneManager.register(error, "error");
 
 		auto mapselect = new MapselectScene();
 		mapselect.load(sceneManager, renderer, window, resources, shaders);
 		sceneManager.register(mapselect, "mapselect");
+		sceneManager.register(mapselect, "mapbrowser");
 
 		auto mapedit = new MapeditSelectScene();
 		mapedit.load(sceneManager, renderer, window, resources, shaders);

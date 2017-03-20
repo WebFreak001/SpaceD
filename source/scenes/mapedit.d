@@ -68,6 +68,10 @@ class MapeditSelectScene : IScene
 			Button: "Delete"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(10, 10, 100, 32), Align.TopLeft
 			DelegateAction: &deleteMap
 		}, "world", true));
+		uploadBtn = mixin(createEntity!("Upload Button", q{
+			Button: "Upload"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(10, 10, 100, 32), Align.TopRight
+			DelegateAction: &uploadMap
+		}, "world", true));
 		editBtn = mixin(createEntity!("Edit Button", q{
 			Button: "Edit"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(10, 10, 300, 50), Align.BottomRight
 			TabFocus: 0
@@ -111,6 +115,19 @@ class MapeditSelectScene : IScene
 		sceneManager.setScene("mapedit");
 	}
 
+	void uploadMap()
+	{
+		if (index == 0)
+			return;
+
+		uploadIndex = index;
+		mixin(createEntity!("Upload Dialog", q{
+			Dialog: "Upload map "d ~ files[index].baseName.to!dstring ~ " to the Internet?"d, "Upload"d, "Cancel"d
+			DelegateAction: &actuallyUpload
+		}));
+		sceneManager.setScene("mapedit");
+	}
+
 	void actuallyDelete()
 	{
 		import std.algorithm;
@@ -128,6 +145,50 @@ class MapeditSelectScene : IScene
 		deleteIndex = -1;
 	}
 
+	void actuallyUpload()
+	{
+		import requests;
+		import std.json;
+		import std.uuid;
+		import std.stdio : stderr;
+
+		if (index != uploadIndex)
+			return;
+
+		auto map = choices[index];
+		JSONValue[] points;
+		foreach (i, ref v; map.innerRing)
+			points ~= JSONValue([JSONValue(v.x), JSONValue(v.y), JSONValue(map.widths[i])]);
+		//dfmt off
+		JSONValue data = JSONValue([
+			"mapid": JSONValue(UUID(map.id).toString),
+			"name": JSONValue(map.name),
+			"uploader": JSONValue("Anon"),
+			"controlPoints": JSONValue(points)
+		]);
+		//dfmt on
+		auto tok = tokenStore.tokenFor(map.id);
+		if (tok != [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+			data["token"] = JSONValue(UUID(tok).toString);
+
+		try
+		{
+			auto ret = cast(string) postContent(APIEndPoint ~ "maps", data.toString, "application/json");
+			if (ret.length > 2)
+				tokenStore.storeMap(map.id, UUID(ret[1 .. $ - 1]).data);
+			else
+				throw new Exception(ret);
+		}
+		catch (Exception e)
+		{
+			stderr.writeln("Failed uploading");
+			stderr.writeln(data);
+			stderr.writeln(e);
+			sceneManager.setScene("error");
+		}
+		uploadIndex = -1;
+	}
+
 	void updateMap()
 	{
 		dots.get!Dots.dotsIndex = cast(int) index;
@@ -138,17 +199,19 @@ class MapeditSelectScene : IScene
 		{
 			editBtn.get!Button.text = "Create"d;
 			deleteBtn.get!Button.rect.x = -500;
+			uploadBtn.get!Button.rect.x = -500;
 		}
 		else
 		{
 			editBtn.get!Button.text = "Edit"d;
 			deleteBtn.get!Button.rect.x = 10;
+			uploadBtn.get!Button.rect.x = 10;
 		}
 	}
 
 	override void preEnter(IScene prev)
 	{
-		if (prev == this && deleteIndex != -1)
+		if (prev == this && (deleteIndex != -1 || uploadIndex != -1))
 			return;
 		choices = [generateTrack];
 		files = [null];
@@ -178,10 +241,10 @@ class MapeditSelectScene : IScene
 	}
 
 	SceneManager sceneManager;
-	Entity mapTitle, dots, preview, editBtn, deleteBtn;
+	Entity mapTitle, dots, preview, editBtn, deleteBtn, uploadBtn;
 	string[] files;
 	Track[] choices;
-	size_t index, deleteIndex;
+	size_t index, deleteIndex, uploadIndex;
 }
 
 class MapEditorScene : IScene

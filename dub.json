@@ -34,6 +34,14 @@
 		"avocado:bmfont": {
 			"path": "Avocado",
 			"version": "*"
-		}
+		},
+		"requests": "~>0.4.0",
+		"asdf": "~>0.1.2"
+	},
+	"sourceFiles": [
+		"web/source/api.d"
+	],
+	"subConfigurations": {
+		"requests": "std"
 	}
 }

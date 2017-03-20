@@ -9,13 +9,19 @@ import components;
 import globstate;
 import particles;
 
+import gl3n.math;
+import gl3n.linalg;
+
 private bool lineLineIntersects(vec2 l1a, vec2 l1b, vec2 l2a, vec2 l2b, ref vec2 intersection)
 {
 	vec2 l1 = l1b - l1a;
 	vec2 l2 = l2b - l2a;
 	float dot = l1.x * l2.y - l1.y * l2.x;
 	if (dot == 0)
+	{
+		intersection = (l1a + l1b + l2a + l2b) * 0.25f;
 		return l1.normalized == l2.normalized;
+	}
 	vec2 c = l2a - l1a;
 	float t = (c.x * l2.y - c.y * l2.x) / dot;
 	if (t < 0 || t > 1)
@@ -210,14 +216,15 @@ public:
 							{
 								auto nrm = (a - b).yx.normalized;
 								nrm.y = -nrm.y;
-								vec2 intersection;
+								vec2 intersection = physics.position;
 								bool ret;
 								if (obstruct && lineLineIntersects(a, b, prevPosition,
 										physics.position, intersection))
 								{
 									// went through wall
 									ret = true;
-									physics.position = intersection;
+									if (intersection.isFinite)
+										physics.position = intersection;
 									physics.linearVelocity *= 0.1f;
 								}
 								for (int repeat = 0; repeat < 10 && (lineLineIntersects(a, b, corners[0],
@@ -299,6 +306,7 @@ public:
 							}
 						}
 
+						physics.traveled += physics.linearVelocity.length * world.delta;
 						physics.cameraRotation = (physics.cameraRotation - physics.rotation) * pow(0.2,
 								world.delta) + physics.rotation;
 						transform.transform = mat4.translation(physics.position.x, 0,
@@ -319,6 +327,13 @@ public:
 							physics.targetCameraFov = 30.0f + speedFov;
 							physics.cameraFov = (physics.cameraFov - physics.targetCameraFov) * pow(0.001f,
 									world.delta) + physics.targetCameraFov;
+
+							if (!physics.linearVelocity.isFinite)
+								physics.linearVelocity = vec2(0, 0);
+							if (isNaN(physics.cameraFov) || physics.cameraFov < 30.0f)
+								physics.cameraFov = 30.0f;
+							if (physics.cameraFov > 80.0f)
+								physics.cameraFov = 80.0f;
 							renderer.projection.top = perspective(window.width, window.height,
 									physics.cameraFov, 5.0f, 1500.0f);
 						}

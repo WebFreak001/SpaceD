@@ -52,28 +52,33 @@ class MainMenuScene : IScene
 			GUIRectangle: logo, vec4(32, 32, 320, 89), Align.TopRight
 		}));
 		mixin(createEntity!("Play Button", q{
-			Button: "Play"d, vec4(0.69f, 0.224f, 0.192f, 1), vec4(1), vec4(96, 32, 300, 64), Align.TopLeft
+			Button: "Play"d, vec4(0.69f, 0.224f, 0.192f, 1), vec4(1), vec4(112, 32, 300, 64), Align.TopLeft
 			TabFocus: 0
 			SceneSwitchAction: "mapselect"
 		}));
 		mixin(createEntity!("Create Button", q{
-			Button: "Create"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(80, 112, 300, 64), Align.TopLeft
+			Button: "Create"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(96, 112, 300, 64), Align.TopLeft
 			TabFocus: 1
 			SceneSwitchAction: "mapedit"
 		}));
-		mixin(createEntity!("Shop Button", q{
-			Button: "Shop"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(64, 192, 300, 64), Align.TopLeft
+		mixin(createEntity!("Browse Button", q{
+			Button: "Browse Maps"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(80, 192, 300, 64), Align.TopLeft
 			TabFocus: 2
+			SceneSwitchAction: "mapbrowser"
+		}));
+		mixin(createEntity!("Shop Button", q{
+			Button: "Shop"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(64, 272, 300, 64), Align.TopLeft
+			TabFocus: 3
 			SceneSwitchAction: "shop"
 		}));
 		mixin(createEntity!("Settings Button", q{
-			Button: "Settings"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(48, 272, 300, 64), Align.TopLeft
-			TabFocus: 3
+			Button: "Settings"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(48, 352, 300, 64), Align.TopLeft
+			TabFocus: 4
 			SceneSwitchAction: "settings"
 		}));
 		mixin(createEntity!("Exit Button", q{
 			Button: "Exit"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(16, 16, 240, 64), Align.BottomLeft
-			TabFocus: 4
+			TabFocus: 5
 			SceneSwitchAction: "crash"
 		}));
 		moneyCounter = mixin(createEntity!("Money Counter", q{
@@ -216,5 +221,36 @@ class SettingsScene : IScene
 	{
 		foreach (ref ent; keybinds)
 			ent.get!Button.rect.x = -1000;
+	}
+}
+class ErrorScene : IScene
+{
+	override void load(SceneManager sceneManager, Renderer renderer, View window,
+			ResourceManager resources, ShaderPool shaders)
+	{
+		auto textVert = shaders.load(ShaderType.Vertex, "shaders/text.vert");
+		auto textFrag = shaders.load(ShaderType.Fragment, "shaders/text.frag");
+
+		Shader textShader = new Shader(renderer, textVert, textFrag);
+		Font font = resources.load!Font("fonts/roboto.fnt", resources, "fonts/");
+
+		world.addSystem!MenuSystem(renderer, window, font, textShader, sceneManager);
+
+		mixin(createEntity!("Error Text", q{
+			GUIText: "An unexpected error occured"d, vec2(0, 100), vec2(1, 1), vec4(1), Align.TopCenter, TextAlign.Center
+		}));
+		mixin(createEntity!("Back Button", q{
+			Button: "Back"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(16, 16, 240, 64), Align.BottomLeft
+			TabFocus: 0
+			SceneSwitchAction: "main"
+		}));
+	}
+
+	override void preEnter(IScene prev)
+	{
+	}
+
+	override void postExit(IScene next)
+	{
 	}
 }

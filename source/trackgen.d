@@ -18,6 +18,7 @@ struct Track
 	string name;
 	bool isRandom;
 	ubyte[16] id;
+	bool toDownload;
 
 	void generateOuterAndMeshes()
 	{
@@ -206,4 +207,24 @@ Track trackFromMemory(ubyte[] mem)
 		ret.widths ~= width;
 	}
 	return ret;
+}
+
+ubyte[] trackToMemory(Track track)
+{
+	import std.uuid;
+
+	ubyte[] data;
+	data ~= cast(ubyte) track.name.length;
+	data ~= cast(ubyte[]) track.name;
+	data ~= 0xFF; // Extended Header
+	data ~= 0x01; // Version
+	data ~= track.id;
+	data ~= (cast(uint) track.innerRing.length).nativeToBigEndian;
+	foreach (i, ref v; track.innerRing)
+	{
+		data ~= v.x.nativeToBigEndian;
+		data ~= v.y.nativeToBigEndian;
+		data ~= track.widths[i].nativeToBigEndian;
+	}
+	return data;
 }

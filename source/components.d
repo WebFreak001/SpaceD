@@ -75,6 +75,7 @@ struct VehiclePhysics
 	vec2 startPosition;
 	float cameraFov = 30;
 	float targetCameraFov = 30;
+	float traveled = 0;
 
 	mixin ComponentBase;
 

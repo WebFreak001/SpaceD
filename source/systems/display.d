@@ -11,6 +11,7 @@ import text;
 import components;
 import particles;
 import scenemanager;
+import globstate;
 
 import std.algorithm;
 import std.conv;
@@ -147,7 +148,11 @@ public:
 						renderer.modelview.push();
 						renderer.modelview.top *= transform.transform * display.matrix;
 						if (entity.fetch(phys))
+						{
 							renderer.modelview.top *= mat4.zrotation(-phys.angularVelocity * 0.3f);
+							if (cheatsActive)
+								renderer.modelview.top *= mat4.xrotation(-phys.traveled * 0.1f);
+						}
 						display.texture.bind(renderer, 0);
 						renderer.bind(display.shader);
 						renderer.drawMesh(display.mesh);

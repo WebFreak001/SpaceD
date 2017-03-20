@@ -17,6 +17,11 @@ import trackgen;
 import std.conv;
 import std.file;
 import std.path;
+import std.uuid;
+
+import asdf;
+import api;
+import requests;
 
 class MapselectScene : IScene
 {
@@ -38,6 +43,7 @@ class MapselectScene : IScene
 		shader.register(["modelview", "projection", "tex"]);
 		shader.set("tex", 0);
 
+		this.sceneManager = sceneManager;
 		world.addSystem!MenuSystem(renderer, window, font, textShader, sceneManager);
 
 		{
@@ -61,11 +67,11 @@ class MapselectScene : IScene
 			TabFocus: 2
 			DelegateAction: &nextMap
 		}));
-		mixin(createEntity!("Play Button", q{
+		playButton = mixin(createEntity!("Play Button", q{
 			Button: "Play"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(10, 10, 300, 50), Align.BottomRight
 			TabFocus: 0
 			SceneSwitchAction: "ingame"
-		}));
+		}, "world", true));
 		mapTitle = mixin(createEntity!("Map Title", q{
 			GUIText: "???"d, vec2(0, 48), vec2(1, 1), vec4(1), Align.TopCenter, TextAlign.Center
 		}, "world", true));
@@ -96,7 +102,10 @@ class MapselectScene : IScene
 
 	void updateMap()
 	{
-		dots.get!Dots.dotsIndex = cast(int) index;
+		auto dotsP = dots.get!Dots;
+		if (online && index == dotsP.numDots)
+			addMaps(cast(int)(index - 1) / 100);
+		dotsP.dotsIndex = cast(int) index;
 		mapTitle.get!GUIText.text = choices[index].name.to!dstring;
 		if (choices[index].isRandom)
 			pbDisplay.get!GUIText.text = "PB: "d ~ globalState.bestTime.makeTime;
@@ -108,29 +117,75 @@ class MapselectScene : IScene
 			else
 				pbDisplay.get!GUIText.text = "PB: n/a"d;
 		}
+		if (online && choices[index].toDownload)
+		{
+			string name = choices[index].name;
+			choices[index] = trackFromMemory(getContent(APIEndPoint ~ "maps/" ~ UUID(choices[index].id)
+					.toString).data);
+			choices[index].name = name;
+		}
+
 		choices[index].generateOuterAndMeshes();
 		preview.get!GUI3D.mesh = choices[index].roadMesh;
 	}
 
 	void notifyMap(string file, Track track)
 	{
+		if (online)
+			return;
 		choices ~= track;
 		index = choices.length - 1;
 		dots.get!Dots.numDots = cast(int) choices.length;
 		updateMap();
 	}
 
+	void addMaps(int page)
+	{
+		auto maps = deserialize!(PublicMap[])(cast(string) getContent(APIEndPoint ~ "maps",
+				queryParams("page", page)));
+		foreach (map; maps)
+		{
+			Track track;
+			track.name = map.uploader ~ " - " ~ map.name;
+			track.id = UUID(map.id).data;
+			track.toDownload = true;
+			choices ~= track;
+		}
+		if (maps.length == page * 100)
+			dots.get!Dots.numDots = page * 100 + 1;
+		else
+			dots.get!Dots.numDots = page * 100 + cast(int) maps.length;
+	}
+
 	override void preEnter(IScene prev)
 	{
-		choices = [generateTrack];
-		foreach (map; dirEntries("res/maps", SpanMode.shallow)) // TODO: implement this into ResourceManager
+		online = sceneManager.current == "mapbrowser";
+		if (online)
 		{
-			if (map.extension != ".map")
-				continue;
-			choices ~= trackFromMemory(cast(ubyte[]) read(map));
+			choices.length = 0;
+			index = 0;
+			addMaps(0);
+			if (choices.length == 0)
+			{
+				// No Maps uploaded
+				sceneManager.setScene("main");
+				return;
+			}
+			playButton.get!Button.text = "Download"d;
 		}
-		index = 0;
-		dots.get!Dots.numDots = cast(int) choices.length;
+		else
+		{
+			choices = [generateTrack];
+			foreach (map; dirEntries("res/maps", SpanMode.shallow)) // TODO: implement this into ResourceManager
+			{
+				if (map.extension != ".map")
+					continue;
+				choices ~= trackFromMemory(cast(ubyte[]) read(map));
+			}
+			index = 0;
+			dots.get!Dots.numDots = cast(int) choices.length;
+			playButton.get!Button.text = "Play"d;
+		}
 		updateMap();
 	}
 
@@ -138,7 +193,9 @@ class MapselectScene : IScene
 	{
 	}
 
-	Entity mapTitle, pbDisplay, dots, preview;
+	bool online = false;
+	Entity mapTitle, pbDisplay, dots, preview, playButton;
 	Track[] choices;
 	size_t index;
+	SceneManager sceneManager;
 }

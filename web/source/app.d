@@ -3,11 +3,13 @@ import std.bitmanip;
 import std.file;
 import std.path;
 import std.uuid;
+import std.math;
 
 import vibe.d;
 
 import mongoschema;
-import std.math;
+
+import api;
 
 enum newUUID = cast(BsonBinData.Type) 0x04;
 
@@ -17,6 +19,9 @@ struct Map
 	@binaryType(newUUID) immutable(ubyte)[] editToken;
 	string name;
 	string path;
+	string uploader;
+	SchemaDate uploadedAt = SchemaDate.now;
+	SchemaDate lastEdit = SchemaDate.now;
 
 	mixin MongoSchema;
 }
@@ -49,12 +54,6 @@ shared static this()
 	listenHTTP(settings, router);
 }
 
-interface MapProvider
-{
-	PublicMap[] getMaps(int page = 0);
-	string postMaps(string mapid, string name, float[3][] controlPoints, string token = "");
-}
-
 class MapInterface : MapProvider
 {
 	PublicMap[] getMaps(int page = 0)
@@ -66,7 +65,8 @@ class MapInterface : MapProvider
 		return maps;
 	}
 
-	string postMaps(string mapid, string name, float[3][] controlPoints, string token = "")
+	string postMaps(string mapid, string name, string uploader,
+			float[3][] controlPoints, string token = "")
 	{
 		enforceHTTP(spam < 10, HTTPStatus.serviceUnavailable,
 				"Maps cannot be uploaded right now, please try again later");
@@ -74,6 +74,7 @@ class MapInterface : MapProvider
 		enforceBadRequest(controlPoints.length >= 3, "Insufficient Map Data");
 		enforceBadRequest(mapid.length == 36, "Invalid UUID");
 		enforceBadRequest(name.length > 0 && name.length <= 255, "Invalid Name");
+		enforceBadRequest(uploader.length > 0 && uploader.length <= 255, "Invalid Uploader");
 		UUID uuid, editToken;
 		try
 		{
@@ -101,6 +102,8 @@ class MapInterface : MapProvider
 		}
 		map.mapID = uuid.data[].idup;
 		map.name = name;
+		map.uploader = uploader;
+		map.lastEdit = SchemaDate.now;
 		editToken = randomUUID;
 		map.editToken = editToken.data[].idup;
 		ubyte[] mapContent;
@@ -142,12 +145,8 @@ void getMap(HTTPServerRequest req, HTTPServerResponse res)
 	sendFile(req, res, Path("uploads") ~ Path(uuid.toString ~ ".map"));
 }
 
-struct PublicMap
-{
-	string id, name;
-}
-
 PublicMap getPublic(Map map)
 {
-	return PublicMap(UUID(map.mapID[0 .. 16]).toString, map.name);
+	return PublicMap(UUID(map.mapID[0 .. 16]).toString, map.name, map.uploader,
+			map.uploadedAt.toSysTime.toISOExtString, map.lastEdit.toSysTime.toISOExtString);
 }

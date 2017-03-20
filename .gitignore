@@ -12,3 +12,4 @@ dub.selections.json
 bin/
 /config.json
 .pbstore
+.tokenstore

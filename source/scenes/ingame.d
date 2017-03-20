@@ -124,6 +124,13 @@ class IngameScene : IScene
 		{
 			auto mapSel = (cast(MapselectScene) prev);
 			track = mapSel.choices[mapSel.index];
+			if (mapSel.online)
+			{
+				import std.file;
+				import std.uuid;
+
+				write("res/maps/download_" ~ UUID(track.id).toString ~ ".map", track.trackToMemory);
+			}
 		}
 		else if (cast(MapEditorScene) prev)
 		{

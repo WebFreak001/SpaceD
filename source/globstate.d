@@ -115,7 +115,7 @@ struct PBStore
 			}
 		entries ~= Entry(msecs, map);
 		save();
-			return true;
+		return true;
 	}
 
 	void save()
@@ -153,6 +153,78 @@ struct PBStore
 }
 
 __gshared PBStore pbStore;
+
+struct TokenStore
+{
+	struct Entry
+	{
+		ubyte[16] mapID;
+		ubyte[16] token;
+	}
+
+	Entry[] entries;
+
+	ubyte[16] tokenFor(ubyte[16] map)
+	{
+		if (map == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+			return map;
+		foreach (entry; entries)
+			if (entry.mapID == map)
+				return entry.token;
+		return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+	}
+
+	bool storeMap(ubyte[16] map, ubyte[16] token)
+	{
+		if (map == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+			return false;
+		foreach (ref entry; entries)
+			if (entry.mapID == map)
+			{
+				entry.token = token;
+				save();
+				return true;
+			}
+		entries ~= Entry(map, token);
+		save();
+		return true;
+	}
+
+	void save()
+	{
+		ubyte[] serialized;
+		foreach (entry; entries)
+			serialized ~= entry.mapID ~ entry.token;
+		serialized ~= crc32Of(serialized)[];
+		foreach (i, ref b; serialized)
+			b += cast(ubyte) SymmetricKey[i % $];
+		write(".tokenstore", serialized);
+	}
+
+	void load()
+	{
+		if (exists(".tokenstore"))
+		{
+			ubyte[] serialized = cast(ubyte[]) read(".tokenstore");
+			foreach (i, ref b; serialized)
+				b -= cast(ubyte) SymmetricKey[i % $];
+			if (serialized.length < 4)
+				return;
+			if (crc32Of(serialized[0 .. $ - 4]) != serialized[$ - 4 .. $])
+			{
+				import std.stdio;
+
+				writeln("Invalid checksum");
+				return;
+			}
+			serialized.length -= 4;
+			for (size_t i = 0; i < serialized.length; i += 32)
+				entries ~= Entry(serialized[i .. i + 16][0 .. 16], serialized[i + 16 .. i + 32][0 .. 16]);
+		}
+	}
+}
+
+__gshared TokenStore tokenStore;
 
 dstring ndigit(ulong digit, uint n)
 {
@@ -208,3 +280,5 @@ struct PlayerSettings
 }
 
 __gshared PlayerSettings settings;
+
+__gshared bool cheatsActive;
