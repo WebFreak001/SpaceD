@@ -1,5 +1,7 @@
-# Linux Jam entry
+# Space-D
 
-Progress:
+A racing game for the linux game jam 2017 hosted on itch.io
 
-[https://i.webfreak.org/fGrAsG.webm](https://i.webfreak.org/fGrAsG.webm)
+Progress/Download:
+
+[https://webfreak.itch.io/spaced](https://webfreak.itch.io/spaced)
