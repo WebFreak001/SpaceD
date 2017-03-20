@@ -226,6 +226,11 @@ public:
 									if (intersection.isFinite)
 										physics.position = intersection;
 									physics.linearVelocity *= 0.1f;
+									if (hasControls && physics.soundDelay < 0)
+									{
+										collisionSound.play(0, 1, 40);
+										physics.soundDelay = 0.1f;
+									}
 								}
 								for (int repeat = 0; repeat < 10 && (lineLineIntersects(a, b, corners[0],
 										corners[1], intersection) || lineLineIntersects(a, b, corners[1], corners[3],
@@ -243,6 +248,11 @@ public:
 													0, intersection.y), 0, ParticleInfo(vec4(1, 1, 1, 1),
 													4, 0, vec3(physics.linearVelocity.x * 0.03f, 10,
 													physics.linearVelocity.y * 0.03f), 0.8f));
+										if (hasControls && physics.soundDelay < 0)
+										{
+											collisionSound.play(0, 1, 40);
+											physics.soundDelay = 0.1f;
+										}
 										physics.linearVelocity *= 0.95f;
 										physics.linearVelocity += nrm;
 									}
@@ -293,6 +303,11 @@ public:
 															0, intersection.y), 0, ParticleInfo(vec4(1, 1, 1, 1),
 															4, 0, vec3(physics.linearVelocity.x * 0.03f, 10,
 															physics.linearVelocity.y * 0.03f), 0.8f));
+												if (hasControls && physics.soundDelay < 0)
+												{
+													collisionSound.play(0, 1, 40);
+													physics.soundDelay = 0.1f;
+												}
 												physics.linearVelocity *= 0.95f;
 												otherCar.linearVelocity *= 0.95f;
 												physics.linearVelocity += nrm;
@@ -306,6 +321,7 @@ public:
 							}
 						}
 
+						physics.soundDelay -= world.delta;
 						physics.traveled += physics.linearVelocity.length * world.delta;
 						physics.cameraRotation = (physics.cameraRotation - physics.rotation) * pow(0.2,
 								world.delta) + physics.rotation;

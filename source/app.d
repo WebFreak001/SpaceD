@@ -7,6 +7,9 @@ import avocado.dfs;
 import avocado.gl3;
 import avocado.sdl2;
 
+import derelict.sdl2.mixer;
+
+import audio;
 import globstate;
 import scenemanager;
 import scenes.ingame;
@@ -16,6 +19,8 @@ import scenes.mapedit;
 import scenes.mapselect;
 import shaderpool;
 import trackgen;
+
+import std.string;
 
 alias View = SDLWindow;
 alias Renderer = GL3Renderer;
@@ -86,6 +91,8 @@ void importMap(string file, SceneManager sceneManager)
 	}
 }
 
+__gshared Audio collisionSound, countdownLowSound, countdownHighSound;
+
 void main(string[] args)
 {
 	auto engine = new Engine;
@@ -95,6 +102,12 @@ void main(string[] args)
 		auto renderer = new Renderer;
 		window.setOpenGLVersion(3, 3);
 		auto world = add(window, renderer);
+
+		DerelictSDL2Mixer.load();
+
+		Mix_Init(MIX_INIT_OGG);
+		if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024) == -1)
+			debug throw new Exception("Failed to open audio device: " ~ Mix_GetError().fromStringz.idup);
 
 		void onResized(int width, int height)
 		{
@@ -132,6 +145,10 @@ void main(string[] args)
 		auto resources = new ResourceManager();
 		resources.prepend("res");
 		resources.prependAll("packs", "*.{pack,zip}");
+
+		collisionSound = resources.load!Audio("sounds/collision.wav");
+		countdownLowSound = resources.load!Audio("sounds/countdown-low.wav");
+		countdownHighSound = resources.load!Audio("sounds/countdown-high.wav");
 
 		renderer.setupDepthTest(DepthFunc.Less);
 

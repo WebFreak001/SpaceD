@@ -76,6 +76,7 @@ struct VehiclePhysics
 	float cameraFov = 30;
 	float targetCameraFov = 30;
 	float traveled = 0;
+	float soundDelay = 0;
 
 	mixin ComponentBase;
 

@@ -221,6 +221,9 @@ public:
 		if (raceInfo.time < 0)
 		{
 			int sec = cast(int)-raceInfo.time;
+			if (lastNum != sec)
+				countdownLowSound.play(0, 1);
+			lastNum = sec;
 			float fraction = 1 - (-raceInfo.time - sec);
 			if (sec >= 0 && sec < 3)
 				renderer.drawRectangle(countdown[sec], vec4(window.width / 2 - 128,
@@ -229,6 +232,9 @@ public:
 		}
 		else if (raceInfo.time < 1)
 		{
+			if (lastNum != -1)
+				countdownHighSound.play(0, 2);
+			lastNum = -1;
 			float yOff = 0;
 			if (raceInfo.time >= 0.5f)
 				yOff = window.height * pow(raceInfo.time - 0.5f, 2);
@@ -282,4 +288,5 @@ private:
 	SceneManager sceneManager;
 	Text text;
 	ubyte maxLaps = 3;
+	int lastNum = -1;
 }
