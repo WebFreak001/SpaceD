@@ -117,6 +117,9 @@ public:
 
 		foreach (i, ref tex; places)
 			tex = res.load!Texture("textures/place-" ~ (i + 1).to!string ~ ".png");
+		foreach (i, ref tex; countdown)
+			tex = res.load!Texture("textures/countdown-" ~ (i + 1).to!string ~ ".png");
+		countdownGo = res.load!Texture("textures/countdown-go.png");
 		vignette = res.load!Texture("textures/vignette.png");
 	}
 
@@ -212,13 +215,21 @@ public:
 	{
 		if (raceInfo.time < 0)
 		{
-			int sec = cast(int)-raceInfo.time + 1;
-			renderer.modelview.push();
-			text.text = sec.to!dstring;
-			renderer.modelview.top *= mat4.translation(window.width / 2 - text.textWidth * 768 * 2,
-					window.height / 2, 0) * mat4.scaling(768 * 4, 512 * 4, 1);
-			text.draw(renderer);
-			renderer.modelview.pop();
+			int sec = cast(int)-raceInfo.time;
+			float fraction = 1 - (-raceInfo.time - sec);
+			if (sec >= 0 && sec < 3)
+				renderer.drawRectangle(countdown[sec], vec4(window.width / 2 - 128,
+						window.height / 2 - 128, 256, 256), vec4(1, 1, 1,
+						1 - fraction * fraction * fraction * fraction));
+		}
+		else if (raceInfo.time < 1)
+		{
+			float yOff = 0;
+			if (raceInfo.time >= 0.5f)
+				yOff = window.height * pow(raceInfo.time - 0.5f, 2);
+			renderer.drawRectangle(countdownGo, vec4(window.width / 2 - 256,
+					window.height / 2 - 256 - yOff, 512, 512), vec4(1, 1, 1,
+					1 - raceInfo.time * raceInfo.time));
 		}
 		renderer.modelview.push();
 		renderer.modelview.top *= mat4.translation(20, window.height - 20, 0) * mat4.scaling(768,
@@ -258,6 +269,8 @@ private:
 	Renderer renderer;
 	View window;
 	Texture[8] places;
+	Texture[3] countdown;
+	Texture countdownGo;
 	Texture vignette;
 	ParticleSystem!(8192) particles;
 	SkyboxMesh skyboxMesh;
