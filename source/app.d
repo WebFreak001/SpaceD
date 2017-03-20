@@ -27,7 +27,7 @@ alias Shape = GL3ShapePosition;
 alias Mesh = GL3MeshIndexPositionTextureNormal;
 alias Font = BMFont!(Texture, ResourceManager);
 
-enum APIEndPoint = "http://localhost:3000/";
+enum APIEndPoint = "https://spaced.webfreak.org/";
 
 Mesh convertAssimpMesh(AssimpMeshData from)
 {
