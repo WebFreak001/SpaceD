@@ -243,6 +243,7 @@ dstring makeTime(ulong msecs)
 struct PlayerSettings
 {
 	PlayerControls.ControlScheme controls;
+	bool disableSound;
 
 	void save()
 	{
@@ -255,7 +256,8 @@ struct PlayerSettings
 				"steerRight": JSONValue(controls.steerRight.to!string),
 				"boost": JSONValue(controls.boost.to!string),
 				"lookBack": JSONValue(controls.lookBack.to!string)
-			])
+			]),
+			"disableSound": JSONValue(disableSound)
 		]).toPrettyString);
 		//dfmt on
 	}
@@ -272,11 +274,23 @@ struct PlayerSettings
 			set.controls.steerRight = json["controls"]["steerRight"].str.to!Key;
 			set.controls.boost = json["controls"]["boost"].str.to!Key;
 			set.controls.lookBack = json["controls"]["lookBack"].str.to!Key;
+			set.disableSound = json.get!bool("disableSound", false);
 			return set;
 		}
 		else
 			return PlayerSettings.init;
 	}
+}
+
+T get(T)(JSONValue json, string key, T defaultVal)
+{
+	auto ptr = key in json;
+	if (!ptr)
+		return defaultVal;
+	static if (is(T == bool))
+		return (*ptr).type == JSON_TYPE.TRUE;
+	else
+		static assert(0);
 }
 
 __gshared PlayerSettings settings;

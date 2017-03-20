@@ -8,6 +8,8 @@ import derelict.sdl2.mixer;
 import std.conv;
 import std.string;
 
+import globstate;
+
 class Audio : IResourceProvider
 {
 	immutable(ubyte)[] data;
@@ -46,6 +48,8 @@ class Audio : IResourceProvider
 
 	void play(int loops = 0, int channel = -1, ubyte volume = MIX_MAX_VOLUME)
 	{
+		if (settings.disableSound)
+			return;
 		Mix_Volume(channel, volume);
 		Mix_PlayChannel(channel, sample, loops);
 	}

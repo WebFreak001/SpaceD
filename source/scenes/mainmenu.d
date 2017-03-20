@@ -175,6 +175,7 @@ class SettingsScene : IScene
 		Shader textShader = new Shader(renderer, textVert, textFrag);
 		Font font = resources.load!Font("fonts/roboto.fnt", resources, "fonts/");
 
+		this.sceneManager = sceneManager;
 		world.addSystem!MenuSystem(renderer, window, font, textShader, sceneManager);
 
 		keybinds ~= mixin(createEntity!("Keybind", q{
@@ -201,10 +202,15 @@ class SettingsScene : IScene
 			Button: "Look Back: "d ~ settings.controls.lookBack.to!dstring, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(-1000, 286, 300, 48)
 			KeybindAction: "Look Back", "lookBack"
 		}, "world", true));
+		sound = mixin(createEntity!("Back Button", q{
+			Button: "Back"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(-1000, 340, 300, 48)
+			TabFocus: 0
+			DelegateAction: &toggleSound
+		}, "world", true));
 
 		mixin(createEntity!("Back Button", q{
 			Button: "Back"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(16, 16, 240, 64), Align.BottomLeft
-			TabFocus: 0
+			TabFocus: 1
 			SceneSwitchAction: "main"
 		}));
 	}
@@ -212,17 +218,36 @@ class SettingsScene : IScene
 	Entity[] keybinds;
 	override void preEnter(IScene prev)
 	{
-		world.tick();
+		if (!(cast(SettingsScene) prev))
+			world.tick();
 		foreach (ref ent; keybinds)
 			ent.get!Button.rect.x = 16;
+		sound.get!Button.rect.x = 16;
+		sound.get!Button.text = settings.disableSound ? "Enable Sound"d : "Disable Sound"d;
+
 	}
 
 	override void postExit(IScene next)
 	{
+		if (cast(SettingsScene) next)
+			return;
 		foreach (ref ent; keybinds)
 			ent.get!Button.rect.x = -1000;
+		sound.get!Button.rect.x = -1000;
 	}
+
+	void toggleSound()
+	{
+		std.stdio.writeln("Toggle Sound");
+		settings.disableSound = !settings.disableSound;
+		settings.save();
+		sceneManager.setScene("settings");
+	}
+
+	Entity sound;
+	SceneManager sceneManager;
 }
+
 class ErrorScene : IScene
 {
 	override void load(SceneManager sceneManager, Renderer renderer, View window,
