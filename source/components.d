@@ -57,6 +57,8 @@ struct VehiclePhysics
 	{
 		this.position = startPosition = position;
 		this.rotation = rotation;
+		this.cameraFov = 40.0f;
+		this.cameraRotation = rotation + PI * 0.9f;
 	}
 
 	vec2 position = vec2(0, 0);

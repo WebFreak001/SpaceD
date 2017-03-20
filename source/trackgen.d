@@ -87,6 +87,18 @@ struct Track
 		outerRingMesh.addIndex(1);
 		outerRingMesh.generate();
 	}
+
+	float startRotation1()
+	{
+		vec2 a = innerRing[0] - innerRing[1];
+		return atan2(a.y, a.x) - PI * 0.5f;
+	}
+
+	float startRotation2()
+	{
+		vec2 a = innerRing[$ - 1] - innerRing[0];
+		return atan2(a.y, a.x) - PI * 0.5f;
+	}
 }
 
 T smooth(T, size_t l)(T[l] arr, size_t i, int n)

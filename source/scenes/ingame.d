@@ -160,7 +160,7 @@ class IngameScene : IScene
 			mixin(createEntity!("Bot 1", q{
 				EntityDisplay: vehicleMesh, shader, vehicle1, mat4.identity
 				Transformation: mat4.translation(0, 0, 0)
-				VehiclePhysics: track.innerRing[0] * 0.2f + track.outerRing[0] * 0.8f, PI * 0.5f
+				VehiclePhysics: track.innerRing[0] * 0.2f + track.outerRing[0] * 0.8f, track.startRotation1
 				VehicleAI:
 				ParticleSpawner:
 			}));
@@ -168,48 +168,48 @@ class IngameScene : IScene
 				EntityDisplay: vehicleMesh, shader, vehicle1, mat4.identity
 				Transformation: mat4.translation(0, 0, 0)
 				PlayerControls: settings.controls
-				VehiclePhysics: track.innerRing[0] * 0.4f + track.outerRing[0] * 0.6f, PI * 0.5f
+				VehiclePhysics: track.innerRing[0] * 0.4f + track.outerRing[0] * 0.6f, track.startRotation1
 				ParticleSpawner:
 			}));
 			mixin(createEntity!("Bot 2", q{
 				EntityDisplay: vehicleMesh, shader, vehicle1, mat4.identity
 				Transformation: mat4.translation(0, 0, 0)
-				VehiclePhysics: track.innerRing[0] * 0.6f + track.outerRing[0] * 0.4f, PI * 0.5f
+				VehiclePhysics: track.innerRing[0] * 0.6f + track.outerRing[0] * 0.4f, track.startRotation1
 				VehicleAI:
 				ParticleSpawner:
 			}));
 			mixin(createEntity!("Bot 3", q{
 				EntityDisplay: vehicleMesh, shader, vehicle1, mat4.identity
 				Transformation: mat4.translation(0, 0, 0)
-				VehiclePhysics: track.innerRing[0] * 0.8f + track.outerRing[0] * 0.2f, PI * 0.5f
+				VehiclePhysics: track.innerRing[0] * 0.8f + track.outerRing[0] * 0.2f, track.startRotation1
 				VehicleAI:
 				ParticleSpawner:
 			}));
 			mixin(createEntity!("Bot 4", q{
 				EntityDisplay: vehicleMesh, shader, vehicle1, mat4.identity
 				Transformation: mat4.translation(0, 0, 0)
-				VehiclePhysics: track.innerRing[$ - 1] * 0.2f + track.outerRing[$ - 1] * 0.8f, PI * 0.5f
+				VehiclePhysics: track.innerRing[$ - 1] * 0.2f + track.outerRing[$ - 1] * 0.8f, track.startRotation2
 				VehicleAI:
 				ParticleSpawner:
 			}));
 			mixin(createEntity!("Bot 5", q{
 				EntityDisplay: vehicleMesh, shader, vehicle1, mat4.identity
 				Transformation: mat4.translation(0, 0, 0)
-				VehiclePhysics: track.innerRing[$ - 1] * 0.4f + track.outerRing[$ - 1] * 0.6f, PI * 0.5f
+				VehiclePhysics: track.innerRing[$ - 1] * 0.4f + track.outerRing[$ - 1] * 0.6f, track.startRotation2
 				VehicleAI:
 				ParticleSpawner:
 			}));
 			mixin(createEntity!("Bot 6", q{
 				EntityDisplay: vehicleMesh, shader, vehicle1, mat4.identity
 				Transformation: mat4.translation(0, 0, 0)
-				VehiclePhysics: track.innerRing[$ - 1] * 0.6f + track.outerRing[$ - 1] * 0.4f, PI * 0.5f
+				VehiclePhysics: track.innerRing[$ - 1] * 0.6f + track.outerRing[$ - 1] * 0.4f, track.startRotation2
 				VehicleAI:
 				ParticleSpawner:
 			}));
 			mixin(createEntity!("Bot 7", q{
 				EntityDisplay: vehicleMesh, shader, vehicle1, mat4.identity
 				Transformation: mat4.translation(0, 0, 0)
-				VehiclePhysics: track.innerRing[$ - 1] * 0.8f + track.outerRing[$ - 1] * 0.2f, PI * 0.5f
+				VehiclePhysics: track.innerRing[$ - 1] * 0.8f + track.outerRing[$ - 1] * 0.2f, track.startRotation2
 				VehicleAI:
 				ParticleSpawner:
 			}));
