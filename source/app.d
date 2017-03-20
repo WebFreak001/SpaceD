@@ -116,9 +116,16 @@ void main(string[] args)
 
 		Key[16] lastPresses;
 		ubyte lastPressIndex;
+		bool isFullscreen = false;
 		window.onKeyboard ~= (ev) {
 			if (ev.type == SDL_KEYUP)
 			{
+				if (ev.keysym.sym == Key.F11)
+				{
+					isFullscreen = !isFullscreen;
+					SDL_SetWindowFullscreen(cast(SDL_Window*) window.getHandle(),
+							isFullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+				}
 				lastPresses[lastPressIndex] = cast(Key) ev.keysym.sym;
 				//dfmt off
 				if (lastPresses[(lastPressIndex + $ - 9) % lastPresses.length] == Key.Up
