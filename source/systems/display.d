@@ -117,6 +117,7 @@ public:
 
 		foreach (i, ref tex; places)
 			tex = res.load!Texture("textures/place-" ~ (i + 1).to!string ~ ".png");
+		vignette = res.load!Texture("textures/vignette.png");
 	}
 
 	final void update(World world)
@@ -195,8 +196,8 @@ public:
 		}
 		particles.draw(renderer, camRotation);
 		renderer.bind2D();
-		renderer.modelview.push();
-		renderer.modelview = mat4.identity;
+		renderer.modelview.push(mat4.identity);
+		renderer.drawRectangle(vignette, vec4(0, 0, window.width, window.height), vec4(1, 1, 1, 0.6f));
 		drawRacingUI(lap, allPlayers, raceInfo);
 		renderer.modelview.pop();
 		renderer.bind3D();
@@ -257,6 +258,7 @@ private:
 	Renderer renderer;
 	View window;
 	Texture[8] places;
+	Texture vignette;
 	ParticleSystem!(8192) particles;
 	SkyboxMesh skyboxMesh;
 	SceneManager sceneManager;
