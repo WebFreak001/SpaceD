@@ -98,7 +98,7 @@ void main(string[] args)
 	auto engine = new Engine;
 	with (engine)
 	{
-		auto window = new View(1280, 720, "SpaceD");
+		auto window = new View(1280, 720, "SpaceD", WindowFlags.Default | WindowFlags.Resizable);
 		auto renderer = new Renderer;
 		window.setOpenGLVersion(3, 3);
 		auto world = add(window, renderer);
