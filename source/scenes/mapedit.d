@@ -40,6 +40,7 @@ class MapeditSelectScene : IScene
 		shader.register(["modelview", "projection", "tex"]);
 		shader.set("tex", 0);
 
+		this.sceneManager = sceneManager;
 		world.addSystem!MenuSystem(renderer, window, font, textShader, sceneManager);
 
 		{
@@ -63,6 +64,10 @@ class MapeditSelectScene : IScene
 			TabFocus: 2
 			DelegateAction: &nextMap
 		}));
+		deleteBtn = mixin(createEntity!("Delete Button", q{
+			Button: "Delete"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(10, 10, 100, 32), Align.TopLeft
+			DelegateAction: &deleteMap
+		}, "world", true));
 		editBtn = mixin(createEntity!("Edit Button", q{
 			Button: "Edit"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(10, 10, 300, 50), Align.BottomRight
 			TabFocus: 0
@@ -93,6 +98,36 @@ class MapeditSelectScene : IScene
 		updateMap();
 	}
 
+	void deleteMap()
+	{
+		if (index == 0)
+			return;
+
+		deleteIndex = index;
+		mixin(createEntity!("Delete Dialog", q{
+			Dialog: "Really delete map "d ~ files[index].baseName.to!dstring ~ "?"d, "Delete"d, "Cancel"d
+			DelegateAction: &actuallyDelete
+		}));
+		sceneManager.setScene("mapedit");
+	}
+
+	void actuallyDelete()
+	{
+		import std.algorithm;
+		import std.file;
+
+		if (index != deleteIndex)
+			return;
+
+		std.file.remove(files[index]);
+		files = files.remove(index);
+		choices = choices.remove(index);
+		dots.get!Dots.numDots = cast(int) choices.length;
+		index = index % choices.length;
+		updateMap();
+		deleteIndex = -1;
+	}
+
 	void updateMap()
 	{
 		dots.get!Dots.dotsIndex = cast(int) index;
@@ -100,13 +135,21 @@ class MapeditSelectScene : IScene
 		choices[index].generateOuterAndMeshes();
 		preview.get!GUI3D.mesh = choices[index].roadMesh;
 		if (choices[index].isRandom)
+		{
 			editBtn.get!Button.text = "Create"d;
+			deleteBtn.get!Button.rect.x = -500;
+		}
 		else
+		{
 			editBtn.get!Button.text = "Edit"d;
+			deleteBtn.get!Button.rect.x = 10;
+		}
 	}
 
 	override void preEnter(IScene prev)
 	{
+		if (prev == this && deleteIndex != -1)
+			return;
 		choices = [generateTrack];
 		files = [null];
 		foreach (map; dirEntries("res/maps", SpanMode.shallow)) // TODO: implement this into ResourceManager
@@ -135,10 +178,10 @@ class MapeditSelectScene : IScene
 	}
 
 	SceneManager sceneManager;
-	Entity mapTitle, dots, preview, editBtn;
+	Entity mapTitle, dots, preview, editBtn, deleteBtn;
 	string[] files;
 	Track[] choices;
-	size_t index;
+	size_t index, deleteIndex;
 }
 
 class MapEditorScene : IScene

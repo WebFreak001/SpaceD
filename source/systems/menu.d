@@ -89,8 +89,7 @@ public:
 		}
 
 		renderer.bind2D();
-		renderer.modelview.push();
-		renderer.modelview = mat4.identity;
+		renderer.modelview.push(mat4.identity);
 
 		int maxTabIndex = 0;
 
@@ -204,6 +203,56 @@ public:
 							text.draw(renderer, button.fg);
 							renderer.modelview.pop();
 						}
+					}
+				}
+				{
+					Dialog* dialog;
+					if (entity.fetch(dialog))
+					{
+						auto rect = vec4(window.width * 0.5f - 200, window.height * 0.5f - 50, 400, 100);
+						// clicks go through, but there shouldn't be anything in the middle
+						renderer.fillRectangle(rect, vec4(0.216f, 0.278f, 0.31f, 1));
+						renderer.modelview.push();
+						text.text = dialog.title;
+						renderer.modelview.top *= mat4.translation(window.width * 0.5f - 190,
+								window.height * 0.5f - 10, 0) * mat4.scaling(768 * 0.5f, 512 * 0.5f, 1);
+						text.draw(renderer);
+						renderer.modelview.pop();
+						if (Mouse.state.x >= rect.x && Mouse.state.x <= rect.x + rect.z
+								&& Mouse.state.y > window.height * 0.5f && Mouse.state.y <= rect.y + rect.a)
+						{
+							if (Mouse.state.x < window.width * 0.5f)
+							{
+								renderer.fillRectangle(vec4(window.width * 0.5f - 200,
+										window.height * 0.5f, 200, 50), vec4(1, 1, 1, 0.5f));
+								if (Mouse.state.isButtonPressed(1))
+								{
+									DelegateAction action;
+									if (entity.fetch(action))
+										action.del();
+									entity.alive = false;
+								}
+							}
+							else
+							{
+								renderer.fillRectangle(vec4(window.width * 0.5f,
+										window.height * 0.5f, 200, 50), vec4(1, 1, 1, 0.5f));
+								if (Mouse.state.isButtonPressed(1))
+									entity.alive = false;
+							}
+						}
+						renderer.modelview.push();
+						text.text = dialog.confirm;
+						renderer.modelview.top *= mat4.translation(window.width * 0.5f - 190,
+								window.height * 0.5f + 40, 0) * mat4.scaling(768 * 0.5f, 512 * 0.5f, 1);
+						text.draw(renderer);
+						renderer.modelview.pop();
+						renderer.modelview.push();
+						text.text = dialog.abort;
+						renderer.modelview.top *= mat4.translation(window.width * 0.5f + 10,
+								window.height * 0.5f + 40, 0) * mat4.scaling(768 * 0.5f, 512 * 0.5f, 1);
+						text.draw(renderer);
+						renderer.modelview.pop();
 					}
 				}
 				{

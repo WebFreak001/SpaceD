@@ -53,6 +53,7 @@ void importMap(string file, SceneManager sceneManager)
 {
 	import std.path;
 	import std.file;
+	import std.conv;
 	import std.string;
 	import std.stdio : stderr;
 

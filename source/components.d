@@ -178,6 +178,13 @@ struct Button
 	mixin ComponentBase;
 }
 
+struct Dialog
+{
+	dstring title, confirm, abort;
+
+	mixin ComponentBase;
+}
+
 struct GUIRectangle
 {
 	Texture texture;
