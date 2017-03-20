@@ -113,7 +113,7 @@ void main()
 		sceneManager.register(mainmenu, "main");
 		sceneManager.setScene("main");
 
-		FPSLimiter limiter = new FPSLimiter(120);
+		FPSLimiter limiter = new FPSLimiter(240);
 
 		start();
 		while (update)
