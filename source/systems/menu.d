@@ -53,12 +53,18 @@ public:
 		dot.generate();
 
 		window.onKeyboard ~= &keyboardEvent;
+		window.onMouseWheel ~= &mouseWheel;
 	}
 
 	void keyboardEvent(KeyboardEvent ev)
 	{
 		if (ev.type == SDL_KEYDOWN)
 			lastKey = cast(Key) ev.keysym.sym;
+	}
+
+	void mouseWheel(MouseWheelEvent ev)
+	{
+		wheel += ev.y;
 	}
 
 	final void update(World world)
@@ -299,6 +305,37 @@ public:
 						for (int i = 0; i < dots.numDots; i++)
 							renderer.fillShape(dot, rect.xy + vec2(i * 24, 0),
 									dots.dotsIndex == i ? vec4(1) : vec4(1, 1, 1, 0.5f));
+						if (dots.prev && Keyboard.state.isKeyPressed(Key.Left)
+								&& !prevKeyboard.isKeyPressed(Key.Left))
+							dots.prev();
+						if (dots.next && Keyboard.state.isKeyPressed(Key.Right)
+								&& !prevKeyboard.isKeyPressed(Key.Right))
+							dots.next();
+						if (Mouse.state.x > rect.x && Mouse.state.x < rect.x + rect.z
+								&& Mouse.state.y > rect.y && Mouse.state.y < rect.y + rect.a
+								&& dots.prev && dots.next)
+						{
+							int delta;
+							if (wheel != 0)
+								delta = -wheel;
+							else if (Mouse.state.isButtonPressed(1) && !prevMouse.isButtonPressed(1))
+							{
+								int x = Mouse.state.x - cast(int) rect.x;
+								int index = x / 24;
+								if (index >= 0 && index < dots.numDots)
+									delta = index - dots.dotsIndex;
+							}
+							if (delta > 0)
+							{
+								for (int i = 0; i < delta; i++)
+									dots.next();
+							}
+							else
+							{
+								for (int i = 0; i < -delta; i++)
+									dots.prev();
+							}
+						}
 					}
 				}
 			}
@@ -318,6 +355,7 @@ public:
 		prevKeyboard = KeyboardState(Keyboard.state.keys.dup);
 
 		lastKey = cast(Key) 0;
+		wheel = 0;
 
 		renderer.modelview.pop();
 		renderer.bind3D();
@@ -332,6 +370,7 @@ private:
 	int curTabIndex = -1;
 	Shape buttonShape, chevronL, chevronR, dot;
 	Key lastKey = cast(Key) 0;
+	int wheel;
 
 	MouseState prevMouse;
 	KeyboardState prevKeyboard;

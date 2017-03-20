@@ -273,6 +273,7 @@ struct Dots
 	vec2 pos;
 	Align alignment;
 	int numDots, dotsIndex;
+	void delegate() prev, next;
 
 	mixin ComponentBase;
 }

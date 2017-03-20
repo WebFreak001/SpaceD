@@ -546,7 +546,7 @@ private:
 	bool isDirty;
 	LockAxis lockAxis = LockAxis.None;
 	EditMode mode;
-	int zoom = 100;
+	int zoom = 1000;
 	vec2 offset = vec2(0);
 	vec2 lastMouse = vec2(0);
 	vec2 relativeTo = vec2(0);

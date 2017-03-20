@@ -73,7 +73,7 @@ class MapselectScene : IScene
 			GUIText: "PB: n/a"d, vec2(0, 16), vec2(1, 1), vec4(1), Align.BottomCenter, TextAlign.Center
 		}, "world", true));
 		dots = mixin(createEntity!("Dots", q{
-			Dots: vec2(0, 90), Align.BottomCenter, 1, 0
+			Dots: vec2(0, 90), Align.BottomCenter, 1, 0, &prevMap, &nextMap
 		}, "world", true));
 		mixin(createEntity!("Back Button", q{
 			Button: "Back"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(10, 10, 300, 50), Align.BottomLeft
