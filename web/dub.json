@@ -1,0 +1,10 @@
+{
+	"dependencies": {
+		"vibe-d": "~>0.7.30",
+		"mongoschemad": "~>2.3.0"
+	},
+	"versions": [
+		"VibeDefaultMain"
+	],
+	"name": "web"
+}

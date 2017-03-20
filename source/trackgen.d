@@ -169,6 +169,14 @@ Track generateTrack()
 	return track;
 }
 
+/// Track File Format:
+/// ubyte name length (in bytes)
+/// name (utf8 encoded)
+/// 0xFF (extended header)
+/// 0x01 (version)
+/// ubyte[16] uuid // extended header end
+/// uint numParts
+/// (float,float,float)[] (x,y,width)
 Track trackFromMemory(ubyte[] mem)
 {
 	Track ret;
