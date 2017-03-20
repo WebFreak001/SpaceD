@@ -315,8 +315,11 @@ public:
 							float speedFov = physics.linearVelocity.length * 0.3f;
 							if (speedFov > 50)
 								speedFov = 50;
+							physics.targetCameraFov = 30.0f + speedFov;
+							physics.cameraFov = (physics.cameraFov - physics.targetCameraFov) * pow(0.001f,
+									world.delta) + physics.targetCameraFov;
 							renderer.projection.top = perspective(window.width, window.height,
-									30.0f + speedFov, 5.0f, 1500.0f);
+									physics.cameraFov, 5.0f, 1500.0f);
 						}
 					}
 				}

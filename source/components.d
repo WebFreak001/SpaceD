@@ -71,6 +71,8 @@ struct VehiclePhysics
 	int lastCheck = -1;
 	bool player = false;
 	vec2 startPosition;
+	float cameraFov = 30;
+	float targetCameraFov = 30;
 
 	mixin ComponentBase;
 
