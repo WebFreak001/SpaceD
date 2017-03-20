@@ -17,6 +17,7 @@ struct Track
 	Mesh outerRingMesh, innerRingMesh;
 	string name;
 	bool isRandom;
+	ubyte[16] id;
 
 	void generateOuterAndMeshes()
 	{
@@ -173,7 +174,17 @@ Track trackFromMemory(ubyte[] mem)
 	Track ret;
 	ret.name = cast(string) mem[1 .. 1 + mem[0]];
 	size_t index = 1 + mem[0];
-	uint numParts = mem.peek!uint(&index);
+	uint numParts;
+	if (mem[index] == 0xFF)
+	{
+		ubyte ver = mem[++index];
+		if (ver != 1)
+			throw new Exception("Unsupported Track Version");
+		index++;
+		ret.id = mem[index .. index + 16][0 .. 16];
+		index += 16;
+	}
+	numParts = mem.peek!uint(&index);
 	if (mem.length != index + numParts * 12)
 		throw new Exception("Invalid Track");
 	ret.innerRing.reserve(numParts);

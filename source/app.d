@@ -113,6 +113,9 @@ void main(string[] args)
 		globalState.load();
 		scope (exit)
 			globalState.save();
+		pbStore.load();
+		scope (exit)
+			pbStore.save();
 		settings = PlayerSettings.load();
 		scope (exit)
 			settings.save();

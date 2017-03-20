@@ -82,6 +82,60 @@ struct GlobalState
 
 __gshared GlobalState globalState;
 
+struct PBStore
+{
+	struct Entry
+	{
+		ulong msecs;
+		ubyte[16] mapID;
+	}
+
+	Entry[] entries;
+
+	ulong pbFor(ubyte[16] map)
+	{
+		foreach (entry; entries)
+			if (entry.mapID == map)
+				return entry.msecs;
+		return 0;
+	}
+
+	void save()
+	{
+		ubyte[] serialized;
+		foreach (entry; entries)
+			serialized ~= entry.mapID ~ entry.msecs.nativeToBigEndian;
+		serialized ~= crc32Of(serialized)[];
+		foreach (i, ref b; serialized)
+			b += cast(ubyte) SymmetricKey[i % $];
+		write(".pbstore", serialized);
+	}
+
+	void load()
+	{
+		if (exists(".pbstore"))
+		{
+			ubyte[] serialized = cast(ubyte[]) read(".pbstore");
+			foreach (i, ref b; serialized)
+				b -= cast(ubyte) SymmetricKey[i % $];
+			if (serialized.length < 4)
+				return;
+			if (crc32Of(serialized[0 .. $ - 4]) != serialized[$ - 4 .. $])
+			{
+				import std.stdio;
+
+				writeln("Invalid checksum");
+				return;
+			}
+			serialized.length -= 4;
+			for (size_t i = 0; i < serialized.length; i += 24)
+				entries ~= Entry(serialized.peek!ulong(i), serialized[i + 8 .. i + 24][0 .. 16]);
+		}
+	}
+}
+
+__gshared PBStore pbStore;
+
 dstring ndigit(ulong digit, uint n)
 {
 	dstring s = digit.to!dstring;

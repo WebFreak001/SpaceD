@@ -500,6 +500,8 @@ public:
 
 	void saveTrack()
 	{
+		import std.uuid;
+
 		saving = false;
 		firstSave = false;
 		isDirty = false;
@@ -516,6 +518,9 @@ public:
 		ubyte[] data;
 		data ~= cast(ubyte) name.length;
 		data ~= cast(ubyte[]) name;
+		data ~= 0xFF; // Extended Header
+		data ~= 0x01; // Version
+		data ~= randomUUID.data;
 		data ~= (cast(uint) controlPoints.length).nativeToBigEndian;
 		foreach (ctrl; controlPoints)
 		{
