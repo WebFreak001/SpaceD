@@ -15,6 +15,7 @@ import scenes.mainmenu;
 import scenes.mapedit;
 import scenes.mapselect;
 import shaderpool;
+import trackgen;
 
 alias View = SDLWindow;
 alias Renderer = GL3Renderer;
@@ -48,7 +49,41 @@ Mesh convertAssimpMesh(AssimpMeshData from)
 	return mesh;
 }
 
-void main()
+void importMap(string file, SceneManager sceneManager)
+{
+	import std.path;
+	import std.file;
+	import std.string;
+	import std.stdio : stderr;
+
+	if (file.extension == ".map")
+	{
+		try
+		{
+			auto target = buildPath("res", "maps", file.baseName);
+			if (file.endsWith(target))
+				return;
+			stderr.writeln("Importing ", file);
+			auto track = trackFromMemory(cast(ubyte[]) read(file));
+			int i = 1;
+			while (target.exists)
+				target = buildPath("res", "maps", file.baseName.stripExtension ~ i.to!string ~ ".map");
+			copy(file, target);
+			remove(file);
+			if (sceneManager.current == "mapselect")
+				(cast(MapselectScene) sceneManager.scene).notifyMap(target, track);
+			else if (sceneManager.current == "mapedit")
+				(cast(MapeditSelectScene) sceneManager.scene).notifyMap(target, track);
+		}
+		catch (Exception e)
+		{
+			stderr.writeln("Failed to import map");
+			stderr.writeln(e);
+		}
+	}
+}
+
+void main(string[] args)
 {
 	auto engine = new Engine;
 	with (engine)
@@ -66,6 +101,8 @@ void main()
 		window.onResized ~= &onResized;
 		onResized(window.width, window.height);
 
+		SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
+
 		auto resources = new ResourceManager();
 		resources.prepend("res");
 		resources.prependAll("packs", "*.{pack,zip}");
@@ -80,6 +117,12 @@ void main()
 			settings.save();
 
 		SceneManager sceneManager = new SceneManager(world);
+
+		window.onDrop ~= (DropEvent ev) { importMap(ev.file, sceneManager); };
+
+		if (args.length > 1)
+			foreach (file; args[1 .. $])
+				importMap(file, sceneManager);
 
 		ShaderPool shaders = new ShaderPool(resources);
 

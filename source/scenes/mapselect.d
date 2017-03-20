@@ -106,6 +106,14 @@ class MapselectScene : IScene
 		preview.get!GUI3D.mesh = choices[index].roadMesh;
 	}
 
+	void notifyMap(string file, Track track)
+	{
+		choices ~= track;
+		index = choices.length - 1;
+		dots.get!Dots.numDots = cast(int) choices.length;
+		updateMap();
+	}
+
 	override void preEnter(IScene prev)
 	{
 		choices = [generateTrack];

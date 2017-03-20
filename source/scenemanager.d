@@ -49,6 +49,11 @@ final class SceneManager
 		curScene = scene;
 	}
 
+	IScene scene()
+	{
+		return curScene;
+	}
+
 	string current()
 	{
 		return cur;

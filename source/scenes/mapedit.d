@@ -121,6 +121,15 @@ class MapeditSelectScene : IScene
 		updateMap();
 	}
 
+	void notifyMap(string file, Track track)
+	{
+		files ~= file;
+		choices ~= track;
+		index = choices.length - 1;
+		dots.get!Dots.numDots = cast(int) choices.length;
+		updateMap();
+	}
+
 	override void postExit(IScene next)
 	{
 	}

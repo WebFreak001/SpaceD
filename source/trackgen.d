@@ -174,6 +174,8 @@ Track trackFromMemory(ubyte[] mem)
 	ret.name = cast(string) mem[1 .. 1 + mem[0]];
 	size_t index = 1 + mem[0];
 	uint numParts = mem.peek!uint(&index);
+	if (mem.length != index + numParts * 12)
+		throw new Exception("Invalid Track");
 	ret.innerRing.reserve(numParts);
 	ret.widths.reserve(numParts);
 	for (uint i = 0; i < numParts; i++)
