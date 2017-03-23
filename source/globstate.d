@@ -244,6 +244,7 @@ struct PlayerSettings
 {
 	PlayerControls.ControlScheme controls;
 	bool disableSound;
+	bool disableMusic;
 
 	void save()
 	{
@@ -257,7 +258,8 @@ struct PlayerSettings
 				"boost": JSONValue(controls.boost.to!string),
 				"lookBack": JSONValue(controls.lookBack.to!string)
 			]),
-			"disableSound": JSONValue(disableSound)
+			"disableSound": JSONValue(disableSound),
+			"disableMusic": JSONValue(disableMusic)
 		]).toPrettyString);
 		//dfmt on
 	}
@@ -275,6 +277,7 @@ struct PlayerSettings
 			set.controls.boost = json["controls"]["boost"].str.to!Key;
 			set.controls.lookBack = json["controls"]["lookBack"].str.to!Key;
 			set.disableSound = json.get!bool("disableSound", false);
+			set.disableMusic = json.get!bool("disableMusic", false);
 			return set;
 		}
 		else

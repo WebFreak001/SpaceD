@@ -92,6 +92,7 @@ void importMap(string file, SceneManager sceneManager)
 }
 
 __gshared Audio collisionSound, countdownLowSound, countdownHighSound;
+__gshared Music bgMusic;
 
 void main(string[] args)
 {
@@ -106,7 +107,7 @@ void main(string[] args)
 		DerelictSDL2Mixer.load();
 
 		Mix_Init(MIX_INIT_OGG);
-		if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024) == -1)
+		if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024) == -1)
 			debug throw new Exception("Failed to open audio device: " ~ Mix_GetError().fromStringz.idup);
 
 		void onResized(int width, int height)
@@ -156,6 +157,9 @@ void main(string[] args)
 		collisionSound = resources.load!Audio("sounds/collision.wav");
 		countdownLowSound = resources.load!Audio("sounds/countdown-low.wav");
 		countdownHighSound = resources.load!Audio("sounds/countdown-high.wav");
+
+		bgMusic = resources.load!Music("music/Blaehubb - R4cers.ogg");
+		bgMusic.play;
 
 		renderer.setupDepthTest(DepthFunc.Less);
 

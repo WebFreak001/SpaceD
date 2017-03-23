@@ -202,15 +202,20 @@ class SettingsScene : IScene
 			Button: "Look Back: "d ~ settings.controls.lookBack.to!dstring, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(-1000, 286, 300, 48)
 			KeybindAction: "Look Back", "lookBack"
 		}, "world", true));
-		sound = mixin(createEntity!("Back Button", q{
-			Button: "Back"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(-1000, 340, 300, 48)
+		sound = mixin(createEntity!("Sound Button", q{
+			Button: "Sound"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(-1000, 340, 300, 48)
 			TabFocus: 0
 			DelegateAction: &toggleSound
+		}, "world", true));
+		music = mixin(createEntity!("Music Button", q{
+			Button: "Music"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(-1000, 394, 300, 48)
+			TabFocus: 1
+			DelegateAction: &toggleMusic
 		}, "world", true));
 
 		mixin(createEntity!("Back Button", q{
 			Button: "Back"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(16, 16, 240, 64), Align.BottomLeft
-			TabFocus: 1
+			TabFocus: 2
 			SceneSwitchAction: "main"
 		}));
 	}
@@ -224,6 +229,8 @@ class SettingsScene : IScene
 			ent.get!Button.rect.x = 16;
 		sound.get!Button.rect.x = 16;
 		sound.get!Button.text = settings.disableSound ? "Enable Sound"d : "Disable Sound"d;
+		music.get!Button.rect.x = 16;
+		music.get!Button.text = settings.disableMusic ? "Enable Music"d : "Disable Music"d;
 
 	}
 
@@ -234,17 +241,28 @@ class SettingsScene : IScene
 		foreach (ref ent; keybinds)
 			ent.get!Button.rect.x = -1000;
 		sound.get!Button.rect.x = -1000;
+		music.get!Button.rect.x = -1000;
 	}
 
 	void toggleSound()
 	{
-		std.stdio.writeln("Toggle Sound");
 		settings.disableSound = !settings.disableSound;
 		settings.save();
 		sceneManager.setScene("settings");
 	}
 
-	Entity sound;
+	void toggleMusic()
+	{
+		settings.disableMusic = !settings.disableMusic;
+		if (settings.disableMusic)
+			bgMusic.fadeOut(500);
+		else
+			bgMusic.fadeIn(500);
+		settings.save();
+		sceneManager.setScene("settings");
+	}
+
+	Entity sound, music;
 	SceneManager sceneManager;
 }
 
