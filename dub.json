@@ -36,12 +36,16 @@
 			"version": "*"
 		},
 		"requests": "~>0.4.0",
-		"asdf": "~>0.1.2"
+		"asdf": "~>0.1.2",
+		"openssl": ">=1.0.0+1.0.0e"
 	},
 	"sourceFiles": [
 		"web/source/api.d"
 	],
+	"lflags-windows": [
+		"/SUBSYSTEM:WINDOWS"
+	],
 	"subConfigurations": {
-		"requests": "std"
+		"requests": "vibed"
 	}
 }
