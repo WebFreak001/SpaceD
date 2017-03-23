@@ -13,3 +13,7 @@ bin/
 /config.json
 .pbstore
 .tokenstore
+*.dll
+*.dll:Zone.Identifier
+*.exe
+res/maps/download_*
