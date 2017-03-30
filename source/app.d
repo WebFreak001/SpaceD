@@ -223,7 +223,7 @@ void main(string[] args)
 		FPSLimiter limiter = new FPSLimiter(240);
 
 		start();
-		while (update)
+		while (update && !sceneManager.shouldExit)
 			limiter.wait();
 		stop();
 	}

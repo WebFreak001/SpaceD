@@ -37,6 +37,8 @@ final class SceneManager
 	{
 		prev = cur;
 		cur = name;
+		if (name == "crash")
+			return;
 		auto sceneP = name in scenes;
 		if (!sceneP)
 			throw new Exception("Scene not found");
@@ -68,6 +70,11 @@ final class SceneManager
 	{
 		if (prev.length)
 			setScene(prev);
+	}
+
+	bool shouldExit()
+	{
+		return cur == "crash";
 	}
 
 private:
