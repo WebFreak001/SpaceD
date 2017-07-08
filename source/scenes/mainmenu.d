@@ -61,11 +61,12 @@ class MainMenuScene : IScene
 			TabFocus: 1
 			SceneSwitchAction: "mapedit"
 		}));
-		mixin(createEntity!("Browse Button", q{
-			Button: "Browse Maps"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(80, 192, 300, 64), Align.TopLeft
-			TabFocus: 2
-			SceneSwitchAction: "mapbrowser"
-		}));
+		version(Have_Requests)
+			mixin(createEntity!("Browse Button", q{
+				Button: "Browse Maps"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(80, 192, 300, 64), Align.TopLeft
+				TabFocus: 2
+				SceneSwitchAction: "mapbrowser"
+			}));
 		mixin(createEntity!("Shop Button", q{
 			Button: "Shop"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(64, 272, 300, 64), Align.TopLeft
 			TabFocus: 3

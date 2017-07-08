@@ -68,10 +68,11 @@ class MapeditSelectScene : IScene
 			Button: "Delete"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(10, 10, 100, 32), Align.TopLeft
 			DelegateAction: &deleteMap
 		}, "world", true));
-		uploadBtn = mixin(createEntity!("Upload Button", q{
-			Button: "Upload"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(10, 10, 100, 32), Align.TopRight
-			DelegateAction: &uploadMap
-		}, "world", true));
+		version(Have_Requests)
+			uploadBtn = mixin(createEntity!("Upload Button", q{
+				Button: "Upload"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(10, 10, 100, 32), Align.TopRight
+				DelegateAction: &uploadMap
+			}, "world", true));
 		editBtn = mixin(createEntity!("Edit Button", q{
 			Button: "Edit"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(10, 10, 300, 50), Align.BottomRight
 			TabFocus: 0
@@ -115,6 +116,7 @@ class MapeditSelectScene : IScene
 		sceneManager.setScene("mapedit");
 	}
 
+	version(Have_Requests)
 	void uploadMap()
 	{
 		if (index == 0)
@@ -145,6 +147,7 @@ class MapeditSelectScene : IScene
 		deleteIndex = -1;
 	}
 
+version(Have_Requests)
 	void actuallyUpload()
 	{
 		import requests;

@@ -20,9 +20,12 @@ import std.path;
 import std.uuid;
 import std.stdio : stderr;
 
-import asdf;
-import api;
-import requests;
+version(Have_Requests)
+{
+	import asdf;
+	import api;
+	import requests;
+}
 
 class MapselectScene : IScene
 {
@@ -104,8 +107,9 @@ class MapselectScene : IScene
 	void updateMap()
 	{
 		auto dotsP = dots.get!Dots;
-		if (online && index == dotsP.numDots)
-			addMaps(cast(int)(index - 1) / 100);
+		version(Have_Requests)
+			if (online && index == dotsP.numDots)
+				addMaps(cast(int)(index - 1) / 100);
 		dotsP.dotsIndex = cast(int) index;
 		mapTitle.get!GUIText.text = choices[index].name.to!dstring;
 		if (choices[index].isRandom)
@@ -118,13 +122,14 @@ class MapselectScene : IScene
 			else
 				pbDisplay.get!GUIText.text = "PB: n/a"d;
 		}
-		if (online && choices[index].toDownload)
-		{
-			string name = choices[index].name;
-			choices[index] = trackFromMemory(getContent(APIEndPoint ~ "maps/" ~ UUID(choices[index].id)
-					.toString).data);
-			choices[index].name = name;
-		}
+		version(Have_Requests)
+			if (online && choices[index].toDownload)
+			{
+				string name = choices[index].name;
+				choices[index] = trackFromMemory(getContent(APIEndPoint ~ "maps/" ~ UUID(choices[index].id)
+						.toString).data);
+				choices[index].name = name;
+			}
 
 		choices[index].generateOuterAndMeshes();
 		preview.get!GUI3D.mesh = choices[index].roadMesh;
@@ -140,6 +145,7 @@ class MapselectScene : IScene
 		updateMap();
 	}
 
+	version(Have_Requests)
 	void addMaps(int page)
 	{
 		try
@@ -169,19 +175,25 @@ class MapselectScene : IScene
 
 	override void preEnter(IScene prev)
 	{
-		online = sceneManager.current == "mapbrowser";
+		version(Have_Requests)
+			online = sceneManager.current == "mapbrowser";
+		else
+			online = false;
 		if (online)
 		{
-			choices.length = 0;
-			index = 0;
-			addMaps(0);
-			if (choices.length == 0)
+			version(Have_Requests)
 			{
-				// No Maps uploaded
-				sceneManager.setScene("main");
-				return;
+				choices.length = 0;
+				index = 0;
+				addMaps(0);
+				if (choices.length == 0)
+				{
+					// No Maps uploaded
+					sceneManager.setScene("main");
+					return;
+				}
+				playButton.get!Button.text = "Download"d;
 			}
-			playButton.get!Button.text = "Download"d;
 		}
 		else
 		{
