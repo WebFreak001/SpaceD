@@ -256,9 +256,9 @@ class SettingsScene : IScene
 	{
 		settings.disableMusic = !settings.disableMusic;
 		if (settings.disableMusic)
-			bgMusic.fadeOut(500);
+			bgMusic.stop();
 		else
-			bgMusic.fadeIn(500);
+			bgMusic.play();
 		settings.save();
 		sceneManager.setScene("settings");
 	}

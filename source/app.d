@@ -21,6 +21,7 @@ import shaderpool;
 import trackgen;
 
 import std.string;
+import std.path;
 
 alias View = SDLWindow;
 alias Renderer = GL3Renderer;
@@ -92,7 +93,7 @@ void importMap(string file, SceneManager sceneManager)
 }
 
 __gshared Audio collisionSound, countdownLowSound, countdownHighSound;
-__gshared Music bgMusic;
+__gshared MusicPlayer bgMusic;
 
 void main(string[] args)
 {
@@ -171,7 +172,10 @@ void main(string[] args)
 		countdownLowSound = resources.load!Audio("sounds/countdown-low.wav");
 		countdownHighSound = resources.load!Audio("sounds/countdown-high.wav");
 
-		bgMusic = resources.load!Music("music/Blaehubb - R4cers.ogg");
+		bgMusic = new MusicPlayer;
+		foreach (file; resources.listResources("music"))
+			bgMusic.tracks ~= resources.load!Music(file, file.baseName.stripExtension);
+		bgMusic.shuffle;
 		bgMusic.play;
 
 		renderer.setupDepthTest(DepthFunc.Less);
@@ -224,7 +228,13 @@ void main(string[] args)
 
 		start();
 		while (update && !sceneManager.shouldExit)
+		{
+			import std.stdio : writeln;
+
+			if (bgMusic.update)
+				writeln("Playing ", bgMusic.tracks[bgMusic.currentTrack].name);
 			limiter.wait();
+		}
 		stop();
 	}
 }

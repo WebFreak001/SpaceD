@@ -62,6 +62,12 @@ class Music : IResourceProvider
 	SDL_RWops* rw;
 	Mix_Music* music;
 	StopWatch position;
+	string name;
+
+	this(string name)
+	{
+		this.name = name;
+	}
 
 	~this()
 	{
@@ -101,6 +107,12 @@ class Music : IResourceProvider
 		position.start();
 	}
 
+	void stop()
+	{
+		Mix_HaltMusic();
+		position.stop();
+	}
+
 	void fadeOut(int ms)
 	{
 		Mix_FadeOutMusic(ms);
@@ -113,5 +125,63 @@ class Music : IResourceProvider
 			return;
 		Mix_FadeInMusicPos(music, loops, ms, position.peek.to!("seconds", double));
 		position.start();
+	}
+}
+
+__gshared bool musicFinished;
+
+extern (C) void musicFinishedHandler() @nogc nothrow
+{
+	musicFinished = true;
+}
+
+class MusicPlayer
+{
+	Music[] tracks;
+	size_t currentTrack;
+	bool playing = false;
+
+	this()
+	{
+		Mix_HookMusicFinished(&musicFinishedHandler);
+	}
+
+	void play()
+	{
+		if (settings.disableMusic || tracks.length == 0)
+			return;
+		tracks[currentTrack].fadeIn(500);
+		playing = true;
+	}
+
+	void stop()
+	{
+		playing = false;
+		if (tracks.length == 0)
+			return;
+		tracks[currentTrack].fadeOut(500);
+	}
+
+	bool update()
+	{
+		if (musicFinished)
+		{
+			musicFinished = false;
+			if (playing && tracks.length)
+			{
+				tracks[currentTrack].stop();
+				currentTrack = (currentTrack + 1) % tracks.length;
+				tracks[currentTrack].play(0);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	void shuffle()
+	{
+		import std.random : randomShuffle;
+
+		tracks.randomShuffle();
 	}
 }
