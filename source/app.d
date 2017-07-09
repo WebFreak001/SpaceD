@@ -176,7 +176,6 @@ void main(string[] args)
 		foreach (file; resources.listResources("music"))
 			bgMusic.tracks ~= resources.load!Music(file, file.baseName.stripExtension);
 		bgMusic.shuffle;
-		bgMusic.play;
 
 		renderer.setupDepthTest(DepthFunc.Less);
 

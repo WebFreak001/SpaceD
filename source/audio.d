@@ -128,7 +128,7 @@ class Music : IResourceProvider
 	}
 }
 
-__gshared bool musicFinished;
+__gshared bool musicFinished = true;
 
 extern (C) void musicFinishedHandler() @nogc nothrow
 {
@@ -139,7 +139,7 @@ class MusicPlayer
 {
 	Music[] tracks;
 	size_t currentTrack;
-	bool playing = false;
+	bool playing = true;
 
 	this()
 	{
