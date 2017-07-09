@@ -16,7 +16,7 @@ import globstate;
 import std.algorithm;
 import std.conv;
 
-alias SkyboxMesh = GL3Mesh!(PositionElement, TexCoordElement);
+alias SkyboxMesh = GL3Mesh!(PositionElement);
 
 class DisplaySystem : ISystem
 {
@@ -33,9 +33,6 @@ public:
 		skyboxMesh = new SkyboxMesh();
 		{ // Skybox
 			//dfmt off
-			enum w1 = 1/3.0f;
-			enum w2 = 2/3.0f;
-			enum h = 0.5f;
 			skyboxMesh.addPositionArray([
 				vec3(-50.0f, 50.0f, 50.0f), // left
 				vec3(-50.0f, 50.0f,-50.0f),
@@ -73,44 +70,6 @@ public:
 				vec3( 50.0f,-50.0f,-50.0f),
 				vec3( 50.0f,-50.0f, 50.0f),
 				vec3(-50.0f,-50.0f, 50.0f),
-			]);
-			skyboxMesh.addTexCoordArray([
-				vec2(0, 0), // left
-				vec2(w1, 0),
-				vec2(0, h),
-				vec2(w1, 0),
-				vec2(w1, h),
-				vec2(0, h),
-				vec2(w1, 0), // front
-				vec2(w2, 0),
-				vec2(w1, h),
-				vec2(w2, 0),
-				vec2(w2, h),
-				vec2(w1, h),
-				vec2(w2, 0), // right
-				vec2(1, 0),
-				vec2(w2, h),
-				vec2(1, 0),
-				vec2(1, h),
-				vec2(w2, h),
-				vec2(0, h), // back
-				vec2(w1, h),
-				vec2(0, 1),
-				vec2(w1, h),
-				vec2(w1, 1),
-				vec2(0, 1),
-				vec2(w1, h), // top
-				vec2(w2, h),
-				vec2(w1, 1),
-				vec2(w2, h),
-				vec2(w2, 1),
-				vec2(w1, 1),
-				vec2(w2, h), // bottom
-				vec2(1, h),
-				vec2(w2, 1),
-				vec2(1, h),
-				vec2(1, 1),
-				vec2(w2, 1),
 			]);
 			skyboxMesh.generate();
 			//dfmt on

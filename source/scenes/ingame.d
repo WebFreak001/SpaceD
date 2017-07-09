@@ -34,6 +34,7 @@ class IngameScene : IScene
 		auto textVert = shaders.load(ShaderType.Vertex, "shaders/text.vert");
 		auto textFrag = shaders.load(ShaderType.Fragment, "shaders/text.frag");
 		auto textureFrag = shaders.load(ShaderType.Fragment, "shaders/texture.frag");
+		auto skyboxFrag = shaders.load(ShaderType.Fragment, "shaders/skybox.frag");
 
 		auto particleShader = new Shader();
 		particleShader.attach(particleFrag);
@@ -67,12 +68,21 @@ class IngameScene : IScene
 
 		{
 			auto skyboxShader = new Shader();
-			skyboxShader.attach(textureFrag);
+			skyboxShader.attach(skyboxFrag);
 			skyboxShader.attach(skyboxVert);
 			skyboxShader.create(renderer);
 			skyboxShader.register(["modelview", "projection", "tex"]);
 			skyboxShader.set("tex", 0);
-			auto skyTex = resources.load!Texture("textures/skybox.png");
+			//dfmt off
+			auto skyTex = Texture.createCubemap(
+				resources.load!BitmapProvider("textures/skybox_right.png").value,
+				resources.load!BitmapProvider("textures/skybox_left.png").value,
+				resources.load!BitmapProvider("textures/skybox_top.png").value,
+				resources.load!BitmapProvider("textures/skybox_bottom.png").value,
+				resources.load!BitmapProvider("textures/skybox_front.png").value,
+				resources.load!BitmapProvider("textures/skybox_back.png").value
+			);
+			//dfmt on
 			mixin(createEntity!("Skybox", q{
 				Skybox: skyboxShader, skyTex
 			}));
