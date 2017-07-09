@@ -337,8 +337,7 @@ public:
 
 		renderer.projection.top = ortho3D(window.width / cast(float) window.height,
 				-100.0f, 100.0f, 1.0f / zoom);
-		renderer.view.push(mat4.xrotation(cradians!90) * mat4.translation(-offset.x,
-				0, -offset.y));
+		renderer.view.push(mat4.xrotation(cradians!90) * mat4.translation(-offset.x, 0, -offset.y));
 		renderer.bind(editTexture);
 		renderer.bind(testShader);
 		renderer.drawMesh(test);
@@ -370,6 +369,11 @@ public:
 		renderer.bind2D();
 
 		renderer.model.push(mat4.identity);
+		scope (exit)
+			renderer.model.pop();
+		renderer.view.push(mat4.identity);
+		scope (exit)
+			renderer.view.pop();
 		if (exiting)
 		{
 			vec4 dialog = vec4(window.width * 0.5f - 200, window.height * 0.5f - 50, 400, 100);
@@ -409,7 +413,6 @@ public:
 			renderer.model.top *= mat4.translation(window.width * 0.5f + 10,
 					window.height * 0.5f + 40, 0) * mat4.scaling(768 * 0.5f, 512 * 0.5f, 1);
 			text.draw(renderer);
-			renderer.model.pop();
 		}
 		else if (saving)
 		{
@@ -418,7 +421,6 @@ public:
 			renderer.model.top *= mat4.translation(window.width * 0.5f - text.textWidth * 768 * 0.5f,
 					window.height * 0.5f, 0) * mat4.scaling(768, 512, 1);
 			text.draw(renderer);
-			renderer.model.pop();
 		}
 		else
 		{
@@ -478,7 +480,6 @@ public:
 			renderer.model.top *= mat4.translation(x, 432, 0) * mat4.scaling(768, 512, 1);
 			text.text = "Delete"d;
 			text.draw(renderer);
-			renderer.model.pop();
 			renderer.model.pop();
 		}
 
