@@ -337,7 +337,7 @@ public:
 
 		renderer.projection.top = ortho3D(window.width / cast(float) window.height,
 				-100.0f, 100.0f, 1.0f / zoom);
-		renderer.modelview.push(mat4.xrotation(cradians!90) * mat4.translation(-offset.x,
+		renderer.view.push(mat4.xrotation(cradians!90) * mat4.translation(-offset.x,
 				0, -offset.y));
 		renderer.bind(editTexture);
 		renderer.bind(testShader);
@@ -348,7 +348,7 @@ public:
 		renderer.bind(editShader);
 		mesh.vertexLength = cast(int) positions.length;
 		renderer.drawMesh(mesh);
-		renderer.modelview.pop();
+		renderer.view.pop();
 
 		mouseWasDown = mouseDown;
 		mouseWheelWasDown = mouseWheelDown;
@@ -369,17 +369,17 @@ public:
 
 		renderer.bind2D();
 
-		renderer.modelview.push(mat4.identity);
+		renderer.model.push(mat4.identity);
 		if (exiting)
 		{
 			vec4 dialog = vec4(window.width * 0.5f - 200, window.height * 0.5f - 50, 400, 100);
 			renderer.fillRectangle(dialog, vec4(0.216f, 0.278f, 0.31f, 1));
-			renderer.modelview.push();
+			renderer.model.push();
 			text.text = "Are you sure you want to exit without saving?";
-			renderer.modelview.top *= mat4.translation(window.width * 0.5f - 190,
+			renderer.model.top *= mat4.translation(window.width * 0.5f - 190,
 					window.height * 0.5f - 10, 0) * mat4.scaling(768 * 0.5f, 512 * 0.5f, 1);
 			text.draw(renderer);
-			renderer.modelview.pop();
+			renderer.model.pop();
 			if (Mouse.state.x >= dialog.x && Mouse.state.x <= dialog.x + dialog.z
 					&& Mouse.state.y > window.height * 0.5f && Mouse.state.y <= dialog.y + dialog.a)
 			{
@@ -398,27 +398,27 @@ public:
 						exiting = false;
 				}
 			}
-			renderer.modelview.push();
+			renderer.model.push();
 			text.text = "Discard Changes";
-			renderer.modelview.top *= mat4.translation(window.width * 0.5f - 190,
+			renderer.model.top *= mat4.translation(window.width * 0.5f - 190,
 					window.height * 0.5f + 40, 0) * mat4.scaling(768 * 0.5f, 512 * 0.5f, 1);
 			text.draw(renderer);
-			renderer.modelview.pop();
-			renderer.modelview.push();
+			renderer.model.pop();
+			renderer.model.push();
 			text.text = "Cancel";
-			renderer.modelview.top *= mat4.translation(window.width * 0.5f + 10,
+			renderer.model.top *= mat4.translation(window.width * 0.5f + 10,
 					window.height * 0.5f + 40, 0) * mat4.scaling(768 * 0.5f, 512 * 0.5f, 1);
 			text.draw(renderer);
-			renderer.modelview.pop();
+			renderer.model.pop();
 		}
 		else if (saving)
 		{
-			renderer.modelview.push();
+			renderer.model.push();
 			text.text = "Name: "d ~ name.to!dstring;
-			renderer.modelview.top *= mat4.translation(window.width * 0.5f - text.textWidth * 768 * 0.5f,
+			renderer.model.top *= mat4.translation(window.width * 0.5f - text.textWidth * 768 * 0.5f,
 					window.height * 0.5f, 0) * mat4.scaling(768, 512, 1);
 			text.draw(renderer);
-			renderer.modelview.pop();
+			renderer.model.pop();
 		}
 		else
 		{
@@ -444,42 +444,42 @@ public:
 			}
 
 			float x = window.width - 190;
-			renderer.modelview.push();
-			renderer.modelview.top *= mat4.translation(x, 48, 0) * mat4.scaling(768, 512, 1);
+			renderer.model.push();
+			renderer.model.top *= mat4.translation(x, 48, 0) * mat4.scaling(768, 512, 1);
 			text.text = "Save"d;
 			text.draw(renderer);
-			renderer.modelview.pop();
-			renderer.modelview.push();
-			renderer.modelview.top *= mat4.translation(x, 112, 0) * mat4.scaling(768, 512, 1);
+			renderer.model.pop();
+			renderer.model.push();
+			renderer.model.top *= mat4.translation(x, 112, 0) * mat4.scaling(768, 512, 1);
 			text.text = "Test"d;
 			text.draw(renderer);
-			renderer.modelview.pop();
-			renderer.modelview.push();
-			renderer.modelview.top *= mat4.translation(x, 176, 0) * mat4.scaling(768, 512, 1);
+			renderer.model.pop();
+			renderer.model.push();
+			renderer.model.top *= mat4.translation(x, 176, 0) * mat4.scaling(768, 512, 1);
 			text.text = "Exit"d;
 			text.draw(renderer);
-			renderer.modelview.pop();
-			renderer.modelview.push();
-			renderer.modelview.top *= mat4.translation(x, 240, 0) * mat4.scaling(768, 512, 1);
+			renderer.model.pop();
+			renderer.model.push();
+			renderer.model.top *= mat4.translation(x, 240, 0) * mat4.scaling(768, 512, 1);
 			text.text = "Grab (G)"d;
 			text.draw(renderer);
-			renderer.modelview.pop();
-			renderer.modelview.push();
-			renderer.modelview.top *= mat4.translation(x, 304, 0) * mat4.scaling(768, 512, 1);
+			renderer.model.pop();
+			renderer.model.push();
+			renderer.model.top *= mat4.translation(x, 304, 0) * mat4.scaling(768, 512, 1);
 			text.text = "Resize Width (W)"d;
 			text.draw(renderer);
-			renderer.modelview.pop();
-			renderer.modelview.push();
-			renderer.modelview.top *= mat4.translation(x, 368, 0) * mat4.scaling(768, 512, 1);
+			renderer.model.pop();
+			renderer.model.push();
+			renderer.model.top *= mat4.translation(x, 368, 0) * mat4.scaling(768, 512, 1);
 			text.text = "Extend (E)"d;
 			text.draw(renderer);
-			renderer.modelview.pop();
-			renderer.modelview.push();
-			renderer.modelview.top *= mat4.translation(x, 432, 0) * mat4.scaling(768, 512, 1);
+			renderer.model.pop();
+			renderer.model.push();
+			renderer.model.top *= mat4.translation(x, 432, 0) * mat4.scaling(768, 512, 1);
 			text.text = "Delete"d;
 			text.draw(renderer);
-			renderer.modelview.pop();
-			renderer.modelview.pop();
+			renderer.model.pop();
+			renderer.model.pop();
 		}
 
 		renderer.bind3D();

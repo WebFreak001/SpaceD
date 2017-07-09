@@ -145,18 +145,18 @@ public:
 					VehiclePhysics phys;
 					if (entity.fetch(transform, display))
 					{
-						renderer.modelview.push();
-						renderer.modelview.top *= transform.transform * display.matrix;
+						renderer.model.push();
+						renderer.model.top *= transform.transform * display.matrix;
 						if (entity.fetch(phys))
 						{
-							renderer.modelview.top *= mat4.zrotation(-phys.angularVelocity * 0.3f);
+							renderer.model.top *= mat4.zrotation(-phys.angularVelocity * 0.3f);
 							if (cheatsActive)
-								renderer.modelview.top *= mat4.xrotation(-phys.traveled * 0.1f);
+								renderer.model.top *= mat4.xrotation(-phys.traveled * 0.1f);
 						}
 						display.texture.bind(renderer, 0);
 						renderer.bind(display.shader);
 						renderer.drawMesh(display.mesh);
-						renderer.modelview.pop();
+						renderer.model.pop();
 					}
 				}
 				{
@@ -189,14 +189,14 @@ public:
 					if (entity.fetch(skybox))
 					{
 						renderer.disableDepthTest();
-						renderer.modelview.push();
-						renderer.modelview[0][3] = 0;
-						renderer.modelview[1][3] = 0;
-						renderer.modelview[2][3] = 0;
+						renderer.view.push();
+						renderer.view[0][3] = 0;
+						renderer.view[1][3] = 0;
+						renderer.view[2][3] = 0;
 						skybox.texture.bind(renderer, 0);
 						renderer.bind(skybox.shader);
 						renderer.drawMesh(skyboxMesh);
-						renderer.modelview.pop();
+						renderer.view.pop();
 						renderer.enableDepthTest();
 					}
 				}
@@ -204,10 +204,12 @@ public:
 		}
 		particles.draw(renderer, camRotation);
 		renderer.bind2D();
-		renderer.modelview.push(mat4.identity);
+		renderer.view.push(mat4.identity);
+		renderer.model.push(mat4.identity);
 		renderer.drawRectangle(vignette, vec4(0, 0, window.width, window.height), vec4(1, 1, 1, 0.6f));
 		drawRacingUI(lap, allPlayers, raceInfo);
-		renderer.modelview.pop();
+		renderer.model.pop();
+		renderer.view.pop();
 		renderer.bind3D();
 		renderer.end(window);
 		if (lap > maxLaps)
@@ -242,12 +244,12 @@ public:
 					window.height / 2 - 256 - yOff, 512, 512), vec4(1, 1, 1,
 					1 - raceInfo.time * raceInfo.time));
 		}
-		renderer.modelview.push();
-		renderer.modelview.top *= mat4.translation(20, window.height - 20, 0) * mat4.scaling(768,
+		renderer.model.push();
+		renderer.model.top *= mat4.translation(20, window.height - 20, 0) * mat4.scaling(768,
 				512, 1);
 		text.text = "Lap "d ~ lap.to!dstring ~ " / "d ~ maxLaps.to!dstring;
 		text.draw(renderer);
-		renderer.modelview.pop();
+		renderer.model.pop();
 
 		int place = 0;
 		foreach (ref player; allPlayers)

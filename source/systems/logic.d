@@ -12,6 +12,8 @@ import particles;
 import gl3n.math;
 import gl3n.linalg;
 
+import std.math : isNaN;
+
 private bool lineLineIntersects(vec2 l1a, vec2 l1b, vec2 l2a, vec2 l2b, ref vec2 intersection)
 {
 	vec2 l1 = l1b - l1a;
@@ -330,11 +332,11 @@ public:
 						if (hasControls)
 						{
 							if (Keyboard.state.isKeyPressed(controls.lookBack))
-								renderer.modelview.top = mat4.xrotation(cradians!15) * mat4.translation(0,
+								renderer.view.top = mat4.xrotation(cradians!15) * mat4.translation(0,
 										0, -40) * mat4.yrotation(physics.cameraRotation + PI) * mat4.translation(-physics.position.x,
 										-20, -physics.position.y);
 							else
-								renderer.modelview.top = mat4.xrotation(cradians!15) * mat4.translation(0,
+								renderer.view.top = mat4.xrotation(cradians!15) * mat4.translation(0,
 										0, -40) * mat4.yrotation(physics.cameraRotation) * mat4.translation(-physics.position.x,
 										-20, -physics.position.y);
 							float speedFov = physics.linearVelocity.length * 0.3f;

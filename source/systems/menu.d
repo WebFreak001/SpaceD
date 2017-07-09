@@ -87,21 +87,24 @@ public:
 				if (entity.fetch(g3d))
 				{
 					g3d.time += world.delta;
-					renderer.modelview.push();
+					renderer.view.push();
+					renderer.model.push(mat4.identity);
 					renderer.projection.push();
 					renderer.projection = g3d.projection;
-					renderer.modelview = g3d.modelview * mat4.yrotation(g3d.time * 0.1f);
+					renderer.view = g3d.modelview * mat4.yrotation(g3d.time * 0.1f);
 					renderer.bind(g3d.shader);
 					renderer.bind(g3d.texture);
 					renderer.drawMesh(g3d.mesh);
 					renderer.projection.pop();
-					renderer.modelview.pop();
+					renderer.model.pop();
+					renderer.view.pop();
 				}
 			}
 		}
 
 		renderer.bind2D();
-		renderer.modelview.push(mat4.identity);
+		renderer.model.push(mat4.identity);
+		renderer.view.push(mat4.identity);
 
 		int maxTabIndex = 0;
 
@@ -173,8 +176,8 @@ public:
 									act = true;
 							}
 						}
-						renderer.modelview.push();
-						renderer.modelview.top *= mat4.translation(vec3(rect.xy,
+						renderer.model.push();
+						renderer.model.top *= mat4.translation(vec3(rect.xy,
 								0)) * mat4.scaling(rect.z, rect.w, 1);
 						auto shape = buttonShape;
 						if (button.text == "<"d)
@@ -185,7 +188,7 @@ public:
 							renderer.fillShape(shape, vec2(0), (button.bg + vec4(0.5f, 0.5f, 1, 1)) * 0.5f);
 						else
 							renderer.fillShape(shape, vec2(0), button.bg);
-						renderer.modelview.pop();
+						renderer.model.pop();
 						if (act)
 						{
 							BuyAction buyAction;
@@ -208,12 +211,12 @@ public:
 						if (button.text != "<"d && button.text != ">"d)
 						{
 							text.text = button.text;
-							renderer.modelview.push();
-							renderer.modelview.top *= mat4.translation(vec3(rect.x + (rect.z - text.textWidth * 768) * 0.5,
+							renderer.model.push();
+							renderer.model.top *= mat4.translation(vec3(rect.x + (rect.z - text.textWidth * 768) * 0.5,
 									rect.y + text.lineHeight * 512 + (rect.a - text.lineHeight * 512) * 0.5, 0)) * mat4.scaling(768,
 									512, 1);
 							text.draw(renderer, button.fg);
-							renderer.modelview.pop();
+							renderer.model.pop();
 						}
 					}
 				}
@@ -224,24 +227,24 @@ public:
 						auto rect = vec4(window.width * 0.5f - 200, window.height * 0.5f - 50, 400, 100);
 						// clicks go through, but there shouldn't be anything in the middle
 						renderer.fillRectangle(rect, vec4(0.216f, 0.278f, 0.31f, 1));
-						renderer.modelview.push();
+						renderer.model.push();
 						text.text = dialog.title;
-						renderer.modelview.top *= mat4.translation(window.width * 0.5f - 190,
+						renderer.model.top *= mat4.translation(window.width * 0.5f - 190,
 								window.height * 0.5f - 20, 0) * mat4.scaling(768 * 0.5f, 512 * 0.5f, 1);
 						text.draw(renderer);
-						renderer.modelview.pop();
+						renderer.model.pop();
 						if (dialog.prompt.length)
 						{
-							renderer.modelview.push();
+							renderer.model.push();
 							dialog.value ~= typed;
 							if (Keyboard.state.isKeyPressed(Key.Backspace)
 									&& !prevKeyboard.isKeyPressed(Key.Backspace) && dialog.value.length)
 								dialog.value.length--;
 							text.text = dialog.prompt ~ dialog.value.to!dstring;
-							renderer.modelview.top *= mat4.translation(window.width * 0.5f - 190,
+							renderer.model.top *= mat4.translation(window.width * 0.5f - 190,
 									window.height * 0.5f, 0) * mat4.scaling(768 * 0.5f, 512 * 0.5f, 1);
 							text.draw(renderer);
-							renderer.modelview.pop();
+							renderer.model.pop();
 						}
 						if (Mouse.state.x >= rect.x && Mouse.state.x <= rect.x + rect.z
 								&& Mouse.state.y > window.height * 0.5f && Mouse.state.y <= rect.y + rect.a)
@@ -266,18 +269,18 @@ public:
 									entity.alive = false;
 							}
 						}
-						renderer.modelview.push();
+						renderer.model.push();
 						text.text = dialog.confirm;
-						renderer.modelview.top *= mat4.translation(window.width * 0.5f - 190,
+						renderer.model.top *= mat4.translation(window.width * 0.5f - 190,
 								window.height * 0.5f + 40, 0) * mat4.scaling(768 * 0.5f, 512 * 0.5f, 1);
 						text.draw(renderer);
-						renderer.modelview.pop();
-						renderer.modelview.push();
+						renderer.model.pop();
+						renderer.model.push();
 						text.text = dialog.abort;
-						renderer.modelview.top *= mat4.translation(window.width * 0.5f + 10,
+						renderer.model.top *= mat4.translation(window.width * 0.5f + 10,
 								window.height * 0.5f + 40, 0) * mat4.scaling(768 * 0.5f, 512 * 0.5f, 1);
 						text.draw(renderer);
-						renderer.modelview.pop();
+						renderer.model.pop();
 					}
 				}
 				{
@@ -307,11 +310,11 @@ public:
 						else if (guitext.textAlign == TextAlign.Center)
 							baseRect.x -= baseRect.z * 0.5f;
 						vec4 rect = compute(baseRect, guitext.alignment, window.width, window.height);
-						renderer.modelview.push();
-						renderer.modelview.top *= mat4.translation(vec3(rect.x, rect.y,
+						renderer.model.push();
+						renderer.model.top *= mat4.translation(vec3(rect.x, rect.y,
 								0)) * mat4.scaling(768 * guitext.scale.x, 512 * guitext.scale.y, 1);
 						text.draw(renderer, guitext.fg);
-						renderer.modelview.pop();
+						renderer.model.pop();
 					}
 				}
 				{
@@ -378,7 +381,8 @@ public:
 		lastKey = cast(Key) 0;
 		wheel = 0;
 
-		renderer.modelview.pop();
+		renderer.view.pop();
+		renderer.model.pop();
 		renderer.bind3D();
 		renderer.end(window);
 	}
