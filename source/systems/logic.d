@@ -310,8 +310,6 @@ public:
 													collisionSound.play(0, 1, 40);
 													physics.soundDelay = 0.1f;
 												}
-												physics.linearVelocity *= 0.95f;
-												otherCar.linearVelocity *= 0.95f;
 												physics.linearVelocity += nrm;
 												otherCar.linearVelocity -= nrm;
 											}
