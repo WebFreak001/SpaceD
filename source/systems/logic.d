@@ -333,12 +333,12 @@ public:
 						{
 							if (Keyboard.state.isKeyPressed(controls.lookBack))
 								renderer.view.top = mat4.xrotation(cradians!15) * mat4.translation(0,
-										0, -40) * mat4.yrotation(physics.cameraRotation + PI) * mat4.translation(-physics.position.x,
-										-20, -physics.position.y);
+										0, -15) * mat4.yrotation(physics.cameraRotation + PI) * mat4.translation(-physics.position.x,
+										-7, -physics.position.y);
 							else
 								renderer.view.top = mat4.xrotation(cradians!15) * mat4.translation(0,
-										0, -40) * mat4.yrotation(physics.cameraRotation) * mat4.translation(-physics.position.x,
-										-20, -physics.position.y);
+										0, -15) * mat4.yrotation(physics.cameraRotation) * mat4.translation(-physics.position.x,
+										-7, -physics.position.y);
 							float speedFov = physics.linearVelocity.length * 0.3f;
 							if (speedFov > 50)
 								speedFov = 50;

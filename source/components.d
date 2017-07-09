@@ -21,6 +21,7 @@ struct EntityDisplay
 	Shader shader;
 	Texture texture;
 	mat4 matrix;
+	bool advanced = false;
 
 	mixin ComponentBase;
 }

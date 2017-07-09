@@ -93,6 +93,7 @@ public:
 		RaceInfo* raceInfo;
 		VehiclePhysics*[] allPlayers;
 		ubyte lap = 0;
+		vec3 cameraWorldPosition = (renderer.view.top.inverse * vec4(0, 0, 0, 1)).xyz;
 		foreach (entity; world.entities)
 		{
 			if (entity.alive)
@@ -114,6 +115,11 @@ public:
 						}
 						display.texture.bind(renderer, 0);
 						renderer.bind(display.shader);
+						if (display.advanced)
+						{
+							display.shader.set("model", renderer.model.top);
+							display.shader.set("cameraWorld", cameraWorldPosition);
+						}
 						renderer.drawMesh(display.mesh);
 						renderer.model.pop();
 					}
@@ -153,6 +159,7 @@ public:
 						renderer.view[1][3] = 0;
 						renderer.view[2][3] = 0;
 						skybox.texture.bind(renderer, 0);
+						skybox.texture.bind(renderer, 9);
 						renderer.bind(skybox.shader);
 						renderer.drawMesh(skyboxMesh);
 						renderer.view.pop();
@@ -204,8 +211,7 @@ public:
 					1 - raceInfo.time * raceInfo.time));
 		}
 		renderer.model.push();
-		renderer.model.top *= mat4.translation(20, window.height - 20, 0) * mat4.scaling(768,
-				512, 1);
+		renderer.model.top *= mat4.translation(20, window.height - 20, 0) * mat4.scaling(768, 512, 1);
 		text.text = "Lap "d ~ lap.to!dstring ~ " / "d ~ maxLaps.to!dstring;
 		text.draw(renderer);
 		renderer.model.pop();
