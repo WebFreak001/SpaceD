@@ -145,6 +145,19 @@ void main(string[] args)
 			}
 		};
 
+		globalState.load();
+		scope (exit)
+			globalState.save();
+		pbStore.load();
+		scope (exit)
+			pbStore.save();
+		tokenStore.load();
+		scope (exit)
+			tokenStore.save();
+		settings = PlayerSettings.load();
+		scope (exit)
+			settings.save();
+
 		window.onResized ~= &onResized;
 		onResized(window.width, window.height);
 
@@ -162,19 +175,6 @@ void main(string[] args)
 		bgMusic.play;
 
 		renderer.setupDepthTest(DepthFunc.Less);
-
-		globalState.load();
-		scope (exit)
-			globalState.save();
-		pbStore.load();
-		scope (exit)
-			pbStore.save();
-		tokenStore.load();
-		scope (exit)
-			tokenStore.save();
-		settings = PlayerSettings.load();
-		scope (exit)
-			settings.save();
 
 		SceneManager sceneManager = new SceneManager(world);
 
