@@ -20,7 +20,7 @@ import std.path;
 import std.uuid;
 import std.stdio : stderr;
 
-version (Have_Requests)
+version (Have_requests)
 {
 	import asdf;
 	import api;
@@ -107,7 +107,7 @@ class MapselectScene : IScene
 	void updateMap()
 	{
 		auto dotsP = dots.get!Dots;
-		version (Have_Requests)
+		version (Have_requests)
 			if (online && index == dotsP.numDots)
 				addMaps(cast(int)(index - 1) / 100);
 		dotsP.dotsIndex = cast(int) index;
@@ -122,7 +122,7 @@ class MapselectScene : IScene
 			else
 				pbDisplay.get!GUIText.text = "PB: n/a"d;
 		}
-		version (Have_Requests)
+		version (Have_requests)
 			if (online && choices[index].toDownload)
 			{
 				string name = choices[index].name;
@@ -145,7 +145,7 @@ class MapselectScene : IScene
 		updateMap();
 	}
 
-	version (Have_Requests) void addMaps(int page)
+	version (Have_requests) void addMaps(int page)
 	{
 		try
 		{
@@ -174,13 +174,13 @@ class MapselectScene : IScene
 
 	override void preEnter(IScene prev)
 	{
-		version (Have_Requests)
+		version (Have_requests)
 			online = sceneManager.current == "mapbrowser";
 		else
 			online = false;
 		if (online)
 		{
-			version (Have_Requests)
+			version (Have_requests)
 			{
 				choices.length = 0;
 				index = 0;

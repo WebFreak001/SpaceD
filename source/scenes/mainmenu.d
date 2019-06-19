@@ -61,7 +61,7 @@ class MainMenuScene : IScene
 			TabFocus: 1
 			SceneSwitchAction: "mapedit"
 		}));
-		version(Have_Requests)
+		version(Have_requests)
 			mixin(createEntity!("Browse Button", q{
 				Button: "Browse Maps"d, vec4(0.878f, 0.878f, 0.878f, 1), vec4(0, 0, 0, 1), vec4(80, 192, 300, 64), Align.TopLeft
 				TabFocus: 2

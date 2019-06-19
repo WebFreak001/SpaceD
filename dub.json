@@ -35,8 +35,8 @@
 			"path": "Avocado",
 			"version": "*"
 		},
-		"requests": "~>0.4.0",
-		"asdf": "~>0.1.2",
+		"requests": "~>1.0.0",
+		"asdf": "~>0.4.6",
 		"openssl": ">=1.0.0+1.0.0e"
 	},
 	"sourceFiles": [

@@ -7,7 +7,7 @@ import derelict.sdl2.mixer;
 
 import std.conv;
 import std.string;
-import std.datetime;
+import std.datetime.stopwatch;
 
 import globstate;
 
@@ -123,7 +123,7 @@ class Music : IResourceProvider
 	{
 		if (settings.disableMusic)
 			return;
-		Mix_FadeInMusicPos(music, loops, ms, position.peek.to!("seconds", double));
+		Mix_FadeInMusicPos(music, loops, ms, position.peek.total!"hnsecs" / 10_000_000.0);
 		position.start();
 	}
 }
