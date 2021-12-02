@@ -17,6 +17,8 @@ import std.algorithm;
 import std.conv;
 import std.stdio;
 
+import gl3n.linalg;
+
 class MenuSystem : ISystem
 {
 public:

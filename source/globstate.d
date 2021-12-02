@@ -276,8 +276,8 @@ struct PlayerSettings
 			set.controls.steerRight = json["controls"]["steerRight"].str.to!Key;
 			set.controls.boost = json["controls"]["boost"].str.to!Key;
 			set.controls.lookBack = json["controls"]["lookBack"].str.to!Key;
-			set.disableSound = json.get!bool("disableSound", false);
-			set.disableMusic = json.get!bool("disableMusic", false);
+			set.disableSound = get!bool(json, "disableSound", false);
+			set.disableMusic = get!bool(json, "disableMusic", false);
 			return set;
 		}
 		else
@@ -285,9 +285,9 @@ struct PlayerSettings
 	}
 }
 
-T get(T)(JSONValue json, string key, T defaultVal)
+T get(T)(const JSONValue json, string key, T defaultVal)
 {
-	auto ptr = key in json;
+	auto ptr = key in json.object;
 	if (!ptr)
 		return defaultVal;
 	static if (is(T == bool))

@@ -1,6 +1,6 @@
 module text;
 
-import app;
+import config;
 
 import avocado.core;
 import avocado.gl3;

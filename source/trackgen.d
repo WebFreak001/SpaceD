@@ -7,6 +7,9 @@ import app;
 import std.random;
 import std.bitmanip;
 
+import gl3n.math;
+import gl3n.linalg;
+
 enum RoadWidth = 50;
 
 struct Track
